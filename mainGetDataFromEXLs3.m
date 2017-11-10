@@ -1,5 +1,4 @@
 %% mainGetDataFromEXLs3
-% COMMENTO MARTA COSTANTINI
 
 % prima di lanciare questo script
 % 1 fare il pairing dei sensori con Bluetooth di windows o chiavetta
