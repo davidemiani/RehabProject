@@ -1,5 +1,5 @@
 %% mainGetDataFromEXLs3
-
+%marta
 % prima di lanciare questo script
 % 1 fare il pairing dei sensori con Bluetooth di windows o chiavetta
 % 2 sostituire il nome della imu
