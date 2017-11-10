@@ -5,7 +5,7 @@
 % 2 sostituire il nome della imu
 % 3 impostare il tempo di acquisizione in secondi
 % 4 lanciare lo script
-
+%cecilia
 clc; close all;
 
 tmr = timerfindall;
