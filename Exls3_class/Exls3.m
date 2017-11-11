@@ -11,7 +11,7 @@ classdef Exls3
     %   StopFcn                 - description.
     %   StartFcn                - description.
     %   SamplingFcn             - description.
-    %   DataAcquired            - description.
+    %   ImuData                 - description.
     %   AcquiringStatus         - description.
     %   SamplesAcquired         - description.
     %   ConnectionStatus        - description.
@@ -65,10 +65,10 @@ classdef Exls3
     %   * gettabili: anche dall'esterno della classe
     %   * settabili: solo dall'interno della classe
     properties (SetAccess = private)
-        DataAcquired       = [];
-        AcquiringStatus    = 'off';
+        ImuData            = [];
         SamplesAcquired    = 0;
         ConnectionStatus   = 'closed';
+        AcquisitionStatus  = 'off';
         PacketsLostNumber  = 0;
         PacketsLostIndexes = [];
     end
@@ -81,7 +81,7 @@ classdef Exls3
         Bluetooth = [];
         CreateNewLine = true;
         Timer = timer('StartFcn',@TimerStartFcn, ...
-            'TimerFcn',@TimerTimerFcn,'StopFcn',TimerStopFcn);
+            'TimerFcn',@TimerTimerFcn,'StopFcn',@TimerStopFcn);
     end
     
     
@@ -128,12 +128,13 @@ classdef Exls3
                                 mustBeMember(PropertyValue,{'A'})          % mancano valori
                                 obj.PacketType = PropertyValue;
                             case 'SamplingFrequency'
+                                mustBeNumeric(PropertyValue)
                                 mustBeMember(PropertyValue,[50,100,200])   % mancano valori
                                 obj.SamplingFrequency = PropertyValue;
                             case 'AnimatedLineHandle'
-                                if isa(class(PropertyValue), ...
-                                        ['matlab.graphics.animation.', ...
-                                        'AnimatedLine'])
+                                if isa(PropertyValue, ...
+                                        ['matlab.graphics.', ...
+                                        'animation.AnimatedLine'])
                                     obj.AnimatedLineHandle = PropertyValue;
                                     obj.ShowLine = true;
                                     obj.CreateNewLine = false;
