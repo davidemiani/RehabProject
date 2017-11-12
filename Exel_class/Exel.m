@@ -87,34 +87,20 @@ classdef Exel
     %   * gettabili: solo dall'interno della classe
     %   * settabili: solo dall'interno della classe
     properties (Hidden)
-        BluetoothHandle
+        % InternalFigure
         InternalFigureMode = true;
         InternalFigureAxes = [];
         InternalFigureLine = [];
-        Timer          = timer('StartFcn',@TimerStartFcn, ...
-            'TimerFcn',@TimerTimerFcn, ...
-            'StopFcn', @TimerStopFcn);
+        
+        % Timer and Bluetooth
+        Timer
+        BluetoothHandle
     end
     
     
     %% METHODS
     %%
-    % spiegazione sui metodi
-    %
-    %
-    %
-    %
-    
     methods (Access = public)
-        %% PUBLIC METHODS
-        %%
-        % spiegazione dei metodi publici
-        %
-        %
-        %
-        %
-        
-        
         %% EXEL
         %%
         function obj = Exel(ImuName,varargin)
@@ -130,7 +116,7 @@ classdef Exel
             %
             %    See also BLUETOOTH, TIMER.
             
-            mlock
+            % mlock
             % setting ImuName. Could be good to have a control with the
             % instrhwinfo?
             obj.ImuName = ImuName;
@@ -216,6 +202,7 @@ classdef Exel
                 end
             end
             
+            % setting PacketType
             switch obj.PacketType
                 case 'A'
                     obj.PacketSize = 11;
@@ -232,6 +219,9 @@ classdef Exel
         %% EXELCONNECT
         %%
         function obj = ExelConnect(obj)
+            % printing
+            fprintf('--- CONNECTING IMU %s ---\n',obj.ImuName)
+            
             % checking if the port has to be opened for the first time
             if isempty(obj.BluetoothHandle)
                 obj.BluetoothHandle = Bluetooth(obj.ImuName,obj.Channel);
@@ -258,40 +248,212 @@ classdef Exel
         %% EXELSTART
         %%
         function obj = ExelStart(obj)
-            start(obj.Timer)
+            % printing
+            fprintf('--- STARTING IMU %s ---\n',obj.ImuName)
+            
+            % calling StartFcn user defined
+            if not(isempty(obj.StartFcn))
+                obj.StartFcn(obj)
+            end
+            
+            % starting data streaming
+            nAttempts = 0;
+            comStarted = false;
+            while comStarted && nAttempts < 3
+                try
+                    % starting data streaming: we have to write 0x3D (61)
+                    fwrite(obj.BluetoothHandle,char(hex2dec('3D')))
+                    pause(0.8)
+                    if not(obj.BluetoothHandle.BytesAvailable)
+                        error('Comunication not started yet')
+                    end
+                    comStarted = true;
+                catch ME
+                    nAttempts = nAttempts + 1;
+                    fprintf('ATTEMPT #%d FAILED: %s\n', ...
+                        nAttempts,ME.message)
+                    pause(0.5)
+                end
+            end
+            
+            % if data streaming started, starting timer for this sensor
+            if comStarted
+                % creating Timer obj
+                obj.Timer = timer();
+                obj.Timer.Period = ...
+                    (obj.PacketsBuffered) / (1.5 * obj.SamplingFrequency);
+                obj.Timer.StartDelay = 0.001;
+                obj.Timer.TaskToExecute = ceil( ...
+                    (obj.AutoStop * obj.SamplingFrequency) / ...
+                    (obj.PacketsBuffered));
+                obj.Timer.ExecutionMode = 'fixedRate';
+                obj.Timer.StartFcn = {@InternalStartFcn,obj};
+                obj.Timer.TimerFcn = {@InternalTimerFcn,obj};
+                obj.Timer.StopFcn  = {@InternalStopFcn, obj};
+                
+                % starting the timer
+                start(obj.Timer)
+            end
         end
         
         
         %% EXELSTOP
         %%
         function obj = ExelStop(obj)
-            stop(obj.Timer)
+            % printing
+            fprintf('--- STOPPING IMU %s ---\n',obj.ImuName)
+            
+            % stopping timer, if necessary
+            if strcmp(obj.Timer.Running,'on')
+                stop(obj.Timer)
+            end
+            
+            % stopping data streaming
+            nAttempts = 0;
+            while nAttempts < 3
+                try
+                    % removing remaining from the com object's input buffer
+                    % and setting the BytesAvailable property to 0
+                    % (done by flushinput)
+                    flushinput(obj.BluetoothHandle)
+                    
+                    % to tell the IMU to stop sending, we have to write 0x3A
+                    fwrite(obj.BluetoothHandle,char(hex2dec('3A')))
+                    pause(0.2)
+                catch ME
+                    nAttempts = nAttempts + 1;
+                    fprintf('ATTEMPT #%d FAILED: %s\n', ...
+                        nAttempts,ME.message)
+                    pause(0.5)
+                end
+            end
+            
+            % calling StopFcn user setted
+            if not(isempty(obj.StopFcn))
+                obj.StopFcn(obj)
+            end
         end
     end
     
+    
     methods (Access = private)
-        function TimerStartFcn(obj,~)
-            % codice della funzione
-            
-            % chiamo la StartFcn definita dal main. La funzione DEVE essere
-            % definita esternamente sia al main che alla classe
-            obj.StartFcn(obj)
+        %% INTERNALSTARTFCN
+        %%
+        function InternalStartFcn(timerObj,~,obj)
+            %% DA SISTEMARE
+            %%
+            try
+                %get first frame
+                while ii < 3
+                    if ~ok(1)
+                        [ok(1), u.h] = handleBluetooth( u.imu.( u.segments{1} ).name, u.serialBufSize, 1, 1, u.h );
+                    end
+                    if ~ok(2)
+                        [ok(2), u.h] = handleBluetooth( u.imu.( u.segments{2} ).name, u.serialBufSize, 2, 1, u.h );
+                    end
+                    ii = ii + 1;
+                end
+                u.startTime = datevec( now );
+                u.onLineTime = datevec( now );
+                flushinput( u.h.s( 1 ));flushinput( u.h.s( 2 ));
+                flushinput( u.h.s( 2 ));flushinput( u.h.s( 1 ));
+                set( tmr1, 'UserData', u ); set( tmr2, 'UserData', u );
+                
+                % profile on
+                start( tmr1 );
+                start( tmr2 )
+                
+            catch ME
+                disp(ME)
+                stop(tmr1); stop(tmr2);
+                for i = 1 : nIMU
+                    [ok( i ), u.h] = handleBluetooth( u.imu.(u.segments{i}).name, u.serialBufSize, i, 0, u.h );
+                end
+                return;
+            end
         end
         
-        function TimerTimerFcn(obj,~)
-            % codice della funzione
-            
+        
+        %% INTERNALTIMERFCN
+        %%
+        function InternalTimerFcn(timerObj,~,obj)
+            %% DA SISTEMARE
+            %%
+            try
+                tmr = varargin{1};
+                i = varargin{3};
+                u = get( tmr, 'UserData' );
+                
+                if  etime( datevec( now ), u.startTime ) * 100 < 100, flushinput( u.h.s( i ) ); return; end
+                
+                if u.k > 0
+                    
+                    fread( u.h.s( i ), u.k );
+                    u.k = 0; disp(['synch corrected, sensor: ', num2str(i)])
+                end
+                
+                nBytes = u.h.s( i ).BytesAvailable;
+                
+                if nBytes >= u.serialBufSize - 1
+                    
+                    u.onLineTime = datevec( now );
+                    [u.data( 1 : u.numOfPacketsBuffered, 1 : u.channels ), u.k] = getDataFromIMU( u.h.s( i ), u.packetSize, u.numOfPacketsBuffered, u.channels, u.k ); % txtFiles{i}
+                    [ u.allFrameRetrieved((u.iii-1) * u.numOfPacketsBuffered + ( 1 : u.numOfPacketsBuffered )), u.s185 ] = getUnwrappedFrame( u.data( :, 3 ), u.s185 );
+                    u.frameRetrieved  = ( u.iii - 1 ) * u.numOfPacketsBuffered + ( 1 : u.numOfPacketsBuffered ); % sd(i).frame - startPlottingFrame(i) + 1;
+                    u.imuData( u.frameRetrieved', : ) = u.data;
+                    
+                    if i == 1 % thx
+                        u.sag = [u.sag atan2d( - u.imuData( u.frameRetrieved, 6 ),  u.imuData( u.frameRetrieved, 5 ))']; % lineHandle
+                        u.sagAcos = [u.sagAcos real( acosd( round( u.imuData( u.frameRetrieved, 6 ) .* 2 / 2^15, 1)))'-90]; % lineHandle
+                        
+                        u.front = [u.front atan2d( - u.imuData( u.frameRetrieved, 4 ),  u.imuData( u.frameRetrieved, 5 ))']; % lineHandle
+                        u.frontAcos = [u.frontAcos real(acosd( round( u.imuData( u.frameRetrieved, 4 ).* 2 / 2^15, 1)))'-90]; % lineHandle
+                        
+                    else % hum
+                        
+                        u.front = [u.front atan2d( u.imuData( u.frameRetrieved, 6 ),  u.imuData( u.frameRetrieved, 5 ))']; % lineHandle
+                        u.frontAcos = [u.frontAcos real(acosd( round( - u.imuData( u.frameRetrieved, 6 ).* 2 / 2^15, 1)))'-90]; % lineHandle
+                        
+                        u.sag = [u.sag atan2d( u.imuData( u.frameRetrieved, 4 ),  u.imuData( u.frameRetrieved, 5 ))']; % lineHandle
+                        u.sagAcos = [u.sagAcos real(acosd( round( - u.imuData( u.frameRetrieved, 4 ) .* 2 / 2^15, 1)))'-90]; % lineHandle
+                    end
+                    
+                    plotAngle( u.sag( end - (u.numOfPacketsBuffered-1) : end), u.sagAcos( end - (u.numOfPacketsBuffered-1) : end),...
+                        u.front( end - (u.numOfPacketsBuffered-1) : end), u.frontAcos( end - (u.numOfPacketsBuffered-1) : end),...
+                        u.frameRetrieved', u.p, u.SF, i )
+                    
+                    u.iii = u.iii + 1;
+                    
+                    if u.iii >= u.tasktoexecute - 1
+                        
+                        stop(tmr)
+                    end
+                elseif etime( datevec( now ), u.onLineTime ) * 100 > 800
+                    msgbox(['The IMU ', num2str(i),' might be disconnected, please check the sensors status and connection'],'Error connection', 'warn');
+                    stop(tmr);
+                    error('IMU disconnected, please check the sensors status and connection');
+                end
+                
+                set( tmr, 'UserData', u );
+            catch ME
+                stop(tmr);
+                disp(ME)
+            end
             % chiamo la SamplingFcn definita dal main. La funzione DEVE
             % essere definita esternamente sia al main che alla classe
-            obj.SamplingFcn(obj)
+            if not(isempty(obj.SamplingFcn))
+                obj.SamplingFcn(obj)
+            end
         end
         
-        function TimerStopFcn(obj,~)
-            % codice della funzione
-            
-            % chiamo la StopFcn definita dal main. La funzione DEVE essere
-            % definita esternamente sia al main che alla classe
-            obj.StopFcn(obj)
+        
+        %% INTERNALSTOPFCN
+        %%
+        function InternalStopFcn(~,~,obj)
+            % stopping data stream. This method is necessary since we have
+            % an autostopped timer. When it stops, automatically it has to
+            % call the ExelStop method.
+            ExelStop(obj)
         end
         
         function obj = DefaultInternalFigure(obj)
@@ -312,4 +474,6 @@ classdef Exel
         end
     end
     
+    
 end
+
