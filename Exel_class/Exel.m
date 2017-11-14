@@ -11,8 +11,6 @@ classdef Exel
     %   ShowFigure              - description.
     %   FigureHandle            - description.
     %
-    %   StopFcn                 - description.
-    %   StartFcn                - description.
     %   SamplingFcn             - description.
     %
     %   ImuData                 - description.
@@ -58,7 +56,6 @@ classdef Exel
         % modificabili creando l'oggetto
         ImuName           = '';
         Segment           = '';
-        Channel           = 1;
         AutoStop          = 30;
         PacketType        = 'A';
         PacketsBuffered    = 6;
@@ -67,14 +64,14 @@ classdef Exel
         FigureHandle      = [];
         FigureVisible     = 'on';
         
-        StopFcn           = [];
-        StartFcn          = [];
         SamplingFcn       = [];
         
         % immodificabili
         ImuData              = [];
+        StartTime            = [];
+        LastSampleTime       = [];
         BufferSize           = [];
-        PacketSize           = [];
+        PacketInfo           = [];
         SamplesAcquired      = 0;
         ConnectionStatus     = 'closed';
         AcquisitionStatus    = 'off';
@@ -94,6 +91,7 @@ classdef Exel
         
         % Timer and Bluetooth
         Timer
+        Displacement = 0;
         BluetoothHandle
     end
     
@@ -150,8 +148,7 @@ classdef Exel
                             mustBeMember(PropertyValue,{'A'})              % mancano valori
                             obj.PacketType = PropertyValue;
                             
-                        case {'SamplingFrequency','Samplingfrequency', ...
-                                'samplingfrequency','sf','fs'}
+                        case {'SamplingFrequency','Samplingfrequency','samplingfrequency','sf','fs'}
                             % validating SamplingFrequency
                             mustBeNumeric(PropertyValue)
                             mustBeMember(PropertyValue,[50,100,200])       % mancano valori
@@ -163,38 +160,30 @@ classdef Exel
                                 obj.FigureHandle = PropertyValue;
                                 obj.InternalFigureMode = false;
                             else
-                                error(['Line handle must be an ', ...
-                                    'AnimatedLine'])
+                                error('Line handle must be an AnimatedLine')
                             end
                             
-                        case {'FigureVisible','Figurevisible', ...
-                                'figurevisible'}
+                        case {'FigureVisible','Figurevisible','figurevisible'}
                             % validating FigureVisible
                             if ischar(PropertyValue)
-                                if any(strcmp(PropertyValue, ...
-                                        {'on','off'}))
+                                if any(strcmp(PropertyValue,{'on','off'}))
                                     obj.FigureVisible = PropertyValue;
                                 else
-                                    error(['FigureVisible Property', ...
-                                        'Value must be ''on'' ', ...
-                                        'or ''off'''])
+                                    error('FigureVisible PropertyValue must be ''on'' or ''off''')
                                 end
                             else
-                                error(['FigureVisible PropertyValue', ...
-                                    'must be a char'])
+                                error('FigureVisible PropertyValue must be a char')
                             end
                             
-                        case {'StopFcn','StartFcn','SamplingFcn'}
+                        case {'SamplingFcn','samplingFcn','samplingfcn'}
                             % validating Stop, Start & Sampling Fcn
                             if isa(PropertyValue,'function_handle')
-                                obj.(PropertyName) = PropertyValue;
+                                obj.SamplingFcn = PropertyValue;
                             else
-                                error([PropertyName,' must be a ', ...
-                                    'valid function handle'])
+                                error('SamplingFcn must be a valid function handle')
                             end
                         otherwise
-                            error(['You cannot set the private proper', ...
-                                'ty ',PropertyName])
+                            error(['You cannot set the private property ',PropertyName])
                     end
                 else
                     % The user inputed a not valid property
@@ -202,11 +191,17 @@ classdef Exel
                 end
             end
             
-            % setting PacketType
+            % setting Packet Properties
             switch obj.PacketType
                 case 'A'
-                    obj.PacketSize = 11;
-                    obj.BufferSize = obj.PacketSize * obj.PacketsBuffered;
+                    obj.PacketInfo.ID = '81';
+                    obj.PacketInfo.ByteNumber = 11;
+                    obj.PacketInfo.DataNumber = 7;
+                    obj.PacketInfo.ByteLimits = [1,1; 2,2; 3,4; 5,6; 7,8; 9,10; 11,11];
+                    obj.PacketInfo.DataNames = {'PacketHeader','PacketID','PacketCount','AccX','AccY','AccZ','CheckSum'};
+                    obj.BufferSize = obj.PacketsBuffered * obj.PacketInfo.ByteNumber;
+                otherwise
+                    error([obj.PacketType,' PacketType still not supported.'])
             end
             
             % if InternalFigure is necessary
@@ -224,7 +219,7 @@ classdef Exel
             
             % checking if the port has to be opened for the first time
             if isempty(obj.BluetoothHandle)
-                obj.BluetoothHandle = Bluetooth(obj.ImuName,obj.Channel);
+                obj.BluetoothHandle = Bluetooth(obj.ImuName,1);
                 obj.BluetoothHandle.InputBufferSize = obj.BufferSize;
             end
             
@@ -237,8 +232,7 @@ classdef Exel
                     obj.ConnectionStatus = 'open';
                 catch ME
                     nAttempts = nAttempts + 1;
-                    fprintf('ATTEMPT #%d FAILED: %s\n', ...
-                        nAttempts,ME.message)
+                    fprintf('ATTEMPT #%d FAILED: %s\n',nAttempts,ME.message)
                     pause(0.5)
                 end
             end
@@ -250,11 +244,6 @@ classdef Exel
         function obj = ExelStart(obj)
             % printing
             fprintf('--- STARTING IMU %s ---\n',obj.ImuName)
-            
-            % calling StartFcn user defined
-            if not(isempty(obj.StartFcn))
-                obj.StartFcn(obj)
-            end
             
             % starting data streaming
             nAttempts = 0;
@@ -270,8 +259,7 @@ classdef Exel
                     comStarted = true;
                 catch ME
                     nAttempts = nAttempts + 1;
-                    fprintf('ATTEMPT #%d FAILED: %s\n', ...
-                        nAttempts,ME.message)
+                    fprintf('ATTEMPT #%d FAILED: %s\n',nAttempts,ME.message)
                     pause(0.5)
                 end
             end
@@ -280,12 +268,9 @@ classdef Exel
             if comStarted
                 % creating Timer obj
                 obj.Timer = timer();
-                obj.Timer.Period = ...
-                    (obj.PacketsBuffered) / (1.5 * obj.SamplingFrequency);
+                obj.Timer.Period = (obj.PacketsBuffered) / (1.5 * obj.SamplingFrequency);
                 obj.Timer.StartDelay = 0.001;
-                obj.Timer.TaskToExecute = ceil( ...
-                    (obj.AutoStop * obj.SamplingFrequency) / ...
-                    (obj.PacketsBuffered));
+                obj.Timer.TaskToExecute = ceil((obj.AutoStop * obj.SamplingFrequency) / (obj.PacketsBuffered));
                 obj.Timer.ExecutionMode = 'fixedRate';
                 obj.Timer.StartFcn = {@InternalStartFcn,obj};
                 obj.Timer.TimerFcn = {@InternalTimerFcn,obj};
@@ -314,7 +299,7 @@ classdef Exel
                 try
                     % removing remaining from the com object's input buffer
                     % and setting the BytesAvailable property to 0
-                    % (done by flushinput)
+                    % (with flushinput)
                     flushinput(obj.BluetoothHandle)
                     
                     % to tell the IMU to stop sending, we have to write 0x3A
@@ -322,15 +307,9 @@ classdef Exel
                     pause(0.2)
                 catch ME
                     nAttempts = nAttempts + 1;
-                    fprintf('ATTEMPT #%d FAILED: %s\n', ...
-                        nAttempts,ME.message)
+                    fprintf('ATTEMPT #%d FAILED: %s\n',nAttempts,ME.message)
                     pause(0.5)
                 end
-            end
-            
-            % calling StopFcn user setted
-            if not(isempty(obj.StopFcn))
-                obj.StopFcn(obj)
             end
         end
     end
@@ -339,106 +318,45 @@ classdef Exel
     methods (Access = private)
         %% INTERNALSTARTFCN
         %%
-        function InternalStartFcn(timerObj,~,obj)
-            %% DA SISTEMARE
-            %%
-            try
-                %get first frame
-                while ii < 3
-                    if ~ok(1)
-                        [ok(1), u.h] = handleBluetooth( u.imu.( u.segments{1} ).name, u.serialBufSize, 1, 1, u.h );
-                    end
-                    if ~ok(2)
-                        [ok(2), u.h] = handleBluetooth( u.imu.( u.segments{2} ).name, u.serialBufSize, 2, 1, u.h );
-                    end
-                    ii = ii + 1;
-                end
-                u.startTime = datevec( now );
-                u.onLineTime = datevec( now );
-                flushinput( u.h.s( 1 ));flushinput( u.h.s( 2 ));
-                flushinput( u.h.s( 2 ));flushinput( u.h.s( 1 ));
-                set( tmr1, 'UserData', u ); set( tmr2, 'UserData', u );
-                
-                % profile on
-                start( tmr1 );
-                start( tmr2 )
-                
-            catch ME
-                disp(ME)
-                stop(tmr1); stop(tmr2);
-                for i = 1 : nIMU
-                    [ok( i ), u.h] = handleBluetooth( u.imu.(u.segments{i}).name, u.serialBufSize, i, 0, u.h );
-                end
-                return;
-            end
+        function InternalStartFcn(~,~,obj)
+            % setting StartTime
+            obj.StartTime = datetime('now');
+            
+            % cleaning up input com
+            flushinput(obj.BluetoothHandle)
         end
         
         
         %% INTERNALTIMERFCN
         %%
         function InternalTimerFcn(timerObj,~,obj)
-            %% DA SISTEMARE
-            %%
             try
-                tmr = varargin{1};
-                i = varargin{3};
-                u = get( tmr, 'UserData' );
-                
-                if  etime( datevec( now ), u.startTime ) * 100 < 100, flushinput( u.h.s( i ) ); return; end
-                
-                if u.k > 0
-                    
-                    fread( u.h.s( i ), u.k );
-                    u.k = 0; disp(['synch corrected, sensor: ', num2str(i)])
+                % correcting displacement
+                if obj.Displacement > 0
+                    fread(obj.BluetoothHandle,obj.Displacement);
+                    obj.Displacement = 0;
+                    fprintf('*** SYNC CORRECTED (IMU %s) ***\n',obj.ImuName)
                 end
                 
-                nBytes = u.h.s( i ).BytesAvailable;
-                
-                if nBytes >= u.serialBufSize - 1
+                % getting data if full buffer
+                if obj.BluetoothHandle.BytesAvailable >= obj.BufferSize
+                    obj.LastSampleTime = datetime('now');
                     
-                    u.onLineTime = datevec( now );
                     [u.data( 1 : u.numOfPacketsBuffered, 1 : u.channels ), u.k] = getDataFromIMU( u.h.s( i ), u.packetSize, u.numOfPacketsBuffered, u.channels, u.k ); % txtFiles{i}
+                    
                     [ u.allFrameRetrieved((u.iii-1) * u.numOfPacketsBuffered + ( 1 : u.numOfPacketsBuffered )), u.s185 ] = getUnwrappedFrame( u.data( :, 3 ), u.s185 );
+                    
                     u.frameRetrieved  = ( u.iii - 1 ) * u.numOfPacketsBuffered + ( 1 : u.numOfPacketsBuffered ); % sd(i).frame - startPlottingFrame(i) + 1;
+                    
                     u.imuData( u.frameRetrieved', : ) = u.data;
                     
-                    if i == 1 % thx
-                        u.sag = [u.sag atan2d( - u.imuData( u.frameRetrieved, 6 ),  u.imuData( u.frameRetrieved, 5 ))']; % lineHandle
-                        u.sagAcos = [u.sagAcos real( acosd( round( u.imuData( u.frameRetrieved, 6 ) .* 2 / 2^15, 1)))'-90]; % lineHandle
-                        
-                        u.front = [u.front atan2d( - u.imuData( u.frameRetrieved, 4 ),  u.imuData( u.frameRetrieved, 5 ))']; % lineHandle
-                        u.frontAcos = [u.frontAcos real(acosd( round( u.imuData( u.frameRetrieved, 4 ).* 2 / 2^15, 1)))'-90]; % lineHandle
-                        
-                    else % hum
-                        
-                        u.front = [u.front atan2d( u.imuData( u.frameRetrieved, 6 ),  u.imuData( u.frameRetrieved, 5 ))']; % lineHandle
-                        u.frontAcos = [u.frontAcos real(acosd( round( - u.imuData( u.frameRetrieved, 6 ).* 2 / 2^15, 1)))'-90]; % lineHandle
-                        
-                        u.sag = [u.sag atan2d( u.imuData( u.frameRetrieved, 4 ),  u.imuData( u.frameRetrieved, 5 ))']; % lineHandle
-                        u.sagAcos = [u.sagAcos real(acosd( round( - u.imuData( u.frameRetrieved, 4 ) .* 2 / 2^15, 1)))'-90]; % lineHandle
-                    end
-                    
-                    plotAngle( u.sag( end - (u.numOfPacketsBuffered-1) : end), u.sagAcos( end - (u.numOfPacketsBuffered-1) : end),...
-                        u.front( end - (u.numOfPacketsBuffered-1) : end), u.frontAcos( end - (u.numOfPacketsBuffered-1) : end),...
-                        u.frameRetrieved', u.p, u.SF, i )
-                    
                     u.iii = u.iii + 1;
-                    
-                    if u.iii >= u.tasktoexecute - 1
-                        
-                        stop(tmr)
-                    end
-                elseif etime( datevec( now ), u.onLineTime ) * 100 > 800
-                    msgbox(['The IMU ', num2str(i),' might be disconnected, please check the sensors status and connection'],'Error connection', 'warn');
-                    stop(tmr);
-                    error('IMU disconnected, please check the sensors status and connection');
                 end
-                
-                set( tmr, 'UserData', u );
             catch ME
-                stop(tmr);
-                disp(ME)
+                warnaME(ME)
+                stop(timerObj);
             end
+            
             % chiamo la SamplingFcn definita dal main. La funzione DEVE
             % essere definita esternamente sia al main che alla classe
             if not(isempty(obj.SamplingFcn))
