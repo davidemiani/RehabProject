@@ -48,35 +48,40 @@ classdef Exel
     
     %% PROPERTIES
     %%
+    % Le proprietà a settaggio pubblico sono:
+    %   * visualizzabili: anche dall'esterno della classe
+    %   * gettabili: anche dall'esterno della classe
+    %   * settabili: anche dall'esterno della classe
+    properties (SetAccess = public)
+        ImuData = []; % settare magari già da qui tutti i campi
+    end
+    
     % Le proprietà a settaggio privato sono:
     %   * visualizzabili: anche dall'esterno della classe
     %   * gettabili: anche dall'esterno della classe
     %   * settabili: solo dall'interno della classe
     properties (SetAccess = private)
-        % modificabili creando l'oggetto
+        % modificabili solo nel creare l'oggetto
         ImuName           = '';
         Segment           = '';
         AutoStop          = 30;
         PacketType        = 'A';
         PacketsBuffered    = 6;
         SamplingFrequency = 50;
-        
         FigureHandle      = [];
         FigureVisible     = 'on';
-        
         SamplingFcn       = [];
         
         % immodificabili
-        ImuData              = [];
         StartTime            = [];
-        LastSampleTime       = [];
+        %LastSampleTime       = [];
         BufferSize           = [];
         PacketInfo           = [];
-        SamplesAcquired      = 0;
+        %SamplesAcquired      = 0;
         ConnectionStatus     = 'closed';
         AcquisitionStatus    = 'off';
-        PacketsLostNumber    = 0;
-        PacketsLostIndexes   = [];
+        %PacketsLostNumber    = 0;
+        %PacketsLostIndexes   = [];
     end
     
     % Le proprietà nascoste sono:

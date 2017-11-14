@@ -4,8 +4,8 @@ function tab = exelLog2table(logpath,AccFs,GyrFs)
 %   -------------------------------------------
 %   INPUTS:
 %   * LOGPATH: a valid exel log path;
-%   * ACCFS: accelerometer full scale;
-%   * GYRFS: gyroscope full scale.
+%   * (ACCFS): accelerometer full scale;
+%   * (GYRFS): gyroscope full scale.
 %   OUTPUT:
 %   * TAB: verted MATLAB table.
 %   -------------------------------------------
