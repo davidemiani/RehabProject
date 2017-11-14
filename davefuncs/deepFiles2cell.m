@@ -33,7 +33,7 @@ function [files,paths] = deepFiles2cell(folder_path,ext)
         [files,paths] = files2cell(folder_path,ext);
         [~,dirs_path] = dirs2cell(folder_path);
         if not(isempty(dirs_path))
-            parfor i=1:length(dirs_path)
+            for i=1:length(dirs_path)
                 [f,p] = deepFiles2cell(dirs_path{i},ext);
                 files = [files;f];
                 paths = [paths;p];
