@@ -1,6 +1,4 @@
 function IMULost = CheckLostPack(IMUdata)
-%la funzione restituisce una struct 1xNumeroSensori
-%%
 %% PER USARE LA FUNZIONE con file .txt 
 % caricare dalla Command Window con il comando 
 %% IMUdata=readtable(filename)
@@ -13,6 +11,7 @@ function IMULost = CheckLostPack(IMUdata)
 % TimeLost          dice il tempo a cui corrispondono i pacchetti persi
 % WhereLost         è una tabella che dice per ogni pezzo perso quanti campioni
 %                   consecutivi, a che altezza e il tempo corrispondente
+%%
 Nsamples = size(IMUdata,1);
 FS=50;
 
@@ -21,9 +20,9 @@ IMULost=struct('islost',0,'NumberPackets',0,'PercPackets',0,'TimeLost',0,'WhereL
 
 DeltaPackets=diff(IMUdata.ProgrNum); %ha dimensione pari a Nsample-1
 IMULost.WhereLost=table;
-IMULost.WhereLost.IndexSample=find(DeltaPackets>1); %se find=2 vuol dire che tra il campione 2 e 3 ho perso pacchetti
-IMULost.WhereLost.NumSamples=DeltaPackets(IMULost.WhereLost.IndexSample)-1;
-IMULost.WhereLost.Time=IMULost.WhereLost.NumSamples/FS;
+IMULost.WhereLost.CutPointIndex=find(DeltaPackets>1); %se find=2 vuol dire che tra il campione 2 e 3 ho perso pacchetti
+IMULost.WhereLost.SamplesNum=DeltaPackets(IMULost.WhereLost.CutPointIndex)-1;
+IMULost.WhereLost.Time=IMULost.WhereLost.SamplesNum/FS;
 
 if sum(DeltaPackets)==Nsamples-1
     disp('Nessun pacchetto perso');
@@ -32,12 +31,12 @@ else
     
     IMULost.islost=1;
     IMULost.NumberPackets = sum(DeltaPackets)-(Nsamples-1);
-    IMULost.PercPackets = IMULost.NumberPackets/(IMUdata.ProgrNum(end)+1)*100;
+    IMULost.PercPackets = IMULost.NumberPackets/Nsamples*100;
     IMULost.TimeLost = IMULost.NumberPackets/FS;
     
     figure,stem(DeltaPackets-1),
-    title('LostPackets'),ylim([-1 Nsamples/100]),
-    xlabel('Tempo'),ylabel('LostPackets');
+    title('Lost Packets'),ylim([-1 max(IMULost.WhereLost.SamplesNum)]),
+    xlabel('Tempo'),ylabel('Packets');
 
 end
 
