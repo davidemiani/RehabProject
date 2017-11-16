@@ -28,7 +28,7 @@ u.imu.hum.ID = 2;
 u.segments{1} = 'thx'; u.segments{2} = 'hum'; nIMU = 2;
 
 % getAutoStop contiene il tempo di acquisizione in s
-getAutoStop = 30;
+getAutoStop = 300;
 
 u.numOfPacketsBuffered = 6;
 % rawData packetSize = 22;
