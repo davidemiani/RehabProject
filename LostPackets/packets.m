@@ -1,8 +1,6 @@
 %script per interpolazione
-%ho in ingresso un CELL ARRAY con gli oggetti Exel. di ognuno prendo
-%IMUdata 
-%PER ORA considero che sono tutti sincronizzati e con la stessa fc
-%Exel e' il mio cell array con gli oggetti
+%input = cellArray di oggetti Exel
+%ipotesi:oggetti sincronizzati e con stessa fc
 
 %% INIT
 %%
@@ -25,61 +23,48 @@ pulisci % elimina tutte le variabili ed i timer che girano nascosti
 
 
 %% LOADING DATA
-%%
-% Il tuo vecchio script recitava:
-%Exel(1).IMUdata=exelLog2table('hom.txt');
-%Exel(2).IMUdata=exelLog2table('thx.txt');
 
-% Incorretto, o comunque non coerente con quanto descritto sopra/con quanto
-% deciso. Con questi due comandi stai creando una struttura chiamata Exel
-% con dimensione 1x2 dove per ogni colonna hai un campo IMUdata, che
-% contiene effettivamente la tabella dei dati. Per creare una cell array
-% che include al suo interno in ogni cella un oggetto Exel con la table
-% come definito, puoi procedere così:
 ExelArray = cell(2,1); % initializing cell array 2x1
 ExelArray{1,1} = Exel('EXLs3_0067','Segment','Homer','FigureVisible','off');
 ExelArray{2,1} = Exel('EXLs3','Segment','Thorax','FigureVisible','off');
 ExelArray{1,1}.ImuData = exelLog2table('hom.txt');
 ExelArray{2,1}.ImuData = exelLog2table('thx.txt');
 % ricordare di fare l'indexing sempre con due dimensioni, anche se l'array
-% è monodimensionale (vettore), perché, soprattutto nei cicli for, è molto
+% è monodimensionale (vettore), perch�, soprattutto nei cicli for, è molto
 % più rapido.
-
-return % da togliere quando hai sistemato sotto
 
 
 %% Simulazione pacchetti persi
 %%
-%cutPacket mi genera un numero casuale intero per localizzare il punto in
-%cui tagliare. L'indice della riga � maggiore di un'unit� rispetto a ProgrNum
-%Se CutPacket=10, taglier� ProgrNum da 9 a 9+NumCut
+%cutPacket genera un numero casuale intero per localizzare il punto in
+%cui tagliare.
+%Se CutPacket=10, taglier� ProgrNum da 9 a 9+NumCut
 NumCut=20;
-CutPacket1=randi(Exel(1).IMUdata.ProgrNum(end));
-CutPacket2=randi(Exel(2).IMUdata.ProgrNum(end));
-Exel(1).IMUdata(CutPacket1:CutPacket1+NumCut-1,:)=[];
-Exel(2).IMUdata(CutPacket2:CutPacket2+NumCut-1,:)=[];
+CutPacket1=randi(ExelArray{1,1}.ImuData.ProgrNum(end));
+CutPacket2=randi(ExelArray{2,1}.ImuData.ProgrNum(end));
+ExelArray{1,1}.ImuData(CutPacket1:CutPacket1+NumCut-1,:)=[];
+ExelArray{2,1}.ImuData(CutPacket2:CutPacket2+NumCut-1,:)=[];
 NumCut=1;
-CutPacket1=randi(Exel(1).IMUdata.ProgrNum(end));
-CutPacket2=randi(Exel(2).IMUdata.ProgrNum(end));
-Exel(1).IMUdata(CutPacket1:CutPacket1+NumCut-1,:)=[];
-Exel(2).IMUdata(CutPacket2:CutPacket2+NumCut-1,:)=[];
+CutPacket1=randi(ExelArray{1,1}.ImuData.ProgrNum(end));
+CutPacket2=randi(ExelArray{2,1}.ImuData.ProgrNum(end));
+ExelArray{1,1}.ImuData(CutPacket1:CutPacket1+NumCut-1,:)=[];
+ExelArray{2,1}.ImuData(CutPacket2:CutPacket2+NumCut-1,:)=[];
 
 
 %%
 
-Nobj = length(Exel); %2
+Nobj = length(ExelArray); %2
 MaxforInterp = 10;
 for i = 1:Nobj
     %disp(Exel(i).IMUname)
-    IMULost(i) = CheckLostPack(Exel(i).IMUdata);
+    ImuLost(i) = CheckLostPack(ExelArray{i,1}.ImuData);
     
-    if IMULost(i).islost
-            Exel(i).IMUdata = AddLostRow(IMULost(i),Exel(i).IMUdata,MaxforInterp);
+    if ImuLost(i).islost
+            ExelArray{i,1}.ImuData = AddLostRow(ImuLost(i),ExelArray{i,1}.ImuData,MaxforInterp);
     end
 
 end
 
 
-%%
 
 
