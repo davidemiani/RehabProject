@@ -1,8 +1,12 @@
+addpath('../davefuncs')
+addpath('../Exel_class')
+addpath('../oldcode')
+
 clc
 close all
 clear all
 
-data = exelLog2table('S0_0007.txt');
+data = exelLog2table('S0_0008.txt');
 ExelObj = Exel('EXLs3_0160','Segment','Homer','FigureVisible','off');
 ExelObj.ImuData = data;
 
