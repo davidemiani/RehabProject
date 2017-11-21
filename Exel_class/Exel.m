@@ -1,4 +1,4 @@
-classdef Exel
+classdef Exel < handle
     %Exel Object Properties and Methods.
     %
     % Exel properties.
@@ -53,7 +53,19 @@ classdef Exel
     %   * gettabili: anche dall'esterno della classe
     %   * settabili: anche dall'esterno della classe
     properties (SetAccess = public)
-        ImuData = []; % settare magari già da qui tutti i campi
+        ImuVars = {'ProgrNum','PacketType', ...
+            'AccX','AccY','AccZ', ...
+            'GyrX','GyrY','GyrZ', ...
+            'MagX','MagY','MagZ', ...
+            'Q0','Q1','Q2','Q3',  ...
+            'Vbat'};
+        ImuData = cell2table(cell(0,16),'VariableNames', ...
+            {'ProgrNum','PacketType', ...
+            'AccX','AccY','AccZ', ...
+            'GyrX','GyrY','GyrZ', ...
+            'MagX','MagY','MagZ', ...
+            'Q0','Q1','Q2','Q3',  ...
+            'Vbat'});
     end
     
     % Le proprietà a settaggio privato sono:
@@ -64,24 +76,24 @@ classdef Exel
         % modificabili solo nel creare l'oggetto
         ImuName           = '';
         Segment           = '';
+        
         AutoStop          = 30;
-        PacketType        = 'A';
-        PacketsBuffered    = 6;
+        PacketName        = 'A';
+        AccFullScale      = 2;
+        GyrFullScale      = 250;
         SamplingFrequency = 50;
+        
         FigureHandle      = [];
         FigureVisible     = 'on';
+        
         SamplingFcn       = [];
         
         % immodificabili
-        StartTime            = [];
-        %LastSampleTime       = [];
-        BufferSize           = [];
-        PacketInfo           = [];
-        %SamplesAcquired      = 0;
-        ConnectionStatus     = 'closed';
-        AcquisitionStatus    = 'off';
-        %PacketsLostNumber    = 0;
-        %PacketsLostIndexes   = [];
+        StartTime         = [];
+        LastSampleTime    = [];
+        PacketsRetrived   = 0;
+        ConnectionStatus  = 'closed';
+        AcquisitionStatus = 'off';
     end
     
     % Le proprietà nascoste sono:
@@ -89,6 +101,25 @@ classdef Exel
     %   * gettabili: solo dall'interno della classe
     %   * settabili: solo dall'interno della classe
     properties (Hidden)
+        % Parameters
+        Ka = 2 * 9.807 / 32768;
+        Kg = 250 / 32768;
+        Km = 0.007629;
+        qn = 1 / 16384;
+        
+        % PacketInfo
+        HeaderByte
+        PacketsBuffered
+        PacketType
+        PacketHead
+        PacketSize
+        BufferSize
+        DataNumber
+        ByteGroups
+        ByteTypes
+        DataNames
+        Multiplier
+        
         % InternalFigure
         InternalFigureMode = true;
         InternalFigureAxes = [];
@@ -148,10 +179,10 @@ classdef Exel
                             mustBePositive(PropertyValue)
                             obj.AutoStop = PropertyValue;
                             
-                        case {'PacketType','Packettype','packettype'}
-                            % validating PacketType
+                        case {'PacketName','Packetname','packetname'}
+                            % validating PacketName
                             mustBeMember(PropertyValue,{'A'})              % mancano valori
-                            obj.PacketType = PropertyValue;
+                            obj.PacketName = PropertyValue;
                             
                         case {'SamplingFrequency','Samplingfrequency','samplingfrequency','sf','fs'}
                             % validating SamplingFrequency
@@ -197,16 +228,23 @@ classdef Exel
             end
             
             % setting Packet Properties
-            switch obj.PacketType
+            obj.HeaderByte = hex2dec('20');
+            obj.PacketsBuffered = 6;
+            switch obj.PacketName
                 case 'A'
-                    obj.PacketInfo.ID = '81';
-                    obj.PacketInfo.ByteNumber = 11;
-                    obj.PacketInfo.DataNumber = 7;
-                    obj.PacketInfo.ByteLimits = [1,1; 2,2; 3,4; 5,6; 7,8; 9,10; 11,11];
-                    obj.PacketInfo.DataNames = {'PacketHeader','PacketID','PacketCount','AccX','AccY','AccZ','CheckSum'};
-                    obj.BufferSize = obj.PacketsBuffered * obj.PacketInfo.ByteNumber;
+                    obj.PacketType = hex2dec('81');
+                    obj.PacketHead = [obj.HeaderByte, obj.PacketType];
+                    
+                    obj.PacketSize = 11;
+                    obj.BufferSize = obj.PacketsBuffered * obj.PacketSize;
+                    
+                    obj.DataNumber = 7;
+                    obj.ByteGroups = {0;1;[2;3];[4;5];[6;7];[8;9];10};
+                    obj.ByteTypes = {'uint8';'uint8';'uint16';'int16';'int16';'int16';'uint8'};
+                    obj.DataNames = {'PacketHeader','PacketID','PacketCount','AccX','AccY','AccZ','CheckSum'};
+                    obj.Multiplier = [1;1;1;obj.Ka;obj.Ka;obj.Ka;1];
                 otherwise
-                    error([obj.PacketType,' PacketType still not supported.'])
+                    error([obj.PacketName,' packet type still not supported.'])
             end
             
             % if InternalFigure is necessary
@@ -234,10 +272,11 @@ classdef Exel
             while strcmp(obj.BluetoothHandle.status,'closed') && nAttempts < 3
                 try
                     fopen(obj.BluetoothHandle); %opens the serial port
-                    obj.ConnectionStatus = 'open';
+                    pause(1), obj.ConnectionStatus = 'open';
+                    fprintf('    Connected!! :-)\n\n')
                 catch ME
                     nAttempts = nAttempts + 1;
-                    fprintf('ATTEMPT #%d FAILED: %s\n',nAttempts,ME.message)
+                    fprintf('ATTEMPT #%d FAILED: %s\n\n',nAttempts,ME.message)
                     pause(0.5)
                 end
             end
@@ -248,20 +287,20 @@ classdef Exel
         %%
         function obj = ExelStart(obj)
             % printing
-            fprintf('--- STARTING IMU %s ---\n',obj.ImuName)
+            fprintf('--- STARTING   IMU %s ---\n',obj.ImuName)
             
             % starting data streaming
             nAttempts = 0;
-            comStarted = false;
-            while comStarted && nAttempts < 3
+            while strcmp(obj.AcquisitionStatus,'off') && nAttempts < 3
                 try
                     % starting data streaming: we have to write 0x3D (61)
                     fwrite(obj.BluetoothHandle,char(hex2dec('3D')))
-                    pause(0.8)
+                    pause(1)
                     if not(obj.BluetoothHandle.BytesAvailable)
                         error('Comunication not started yet')
                     end
-                    comStarted = true;
+                    obj.AcquisitionStatus = 'on';
+                    fprintf('    Acquisition Started!! :-D\n\n')
                 catch ME
                     nAttempts = nAttempts + 1;
                     fprintf('ATTEMPT #%d FAILED: %s\n',nAttempts,ME.message)
@@ -269,20 +308,24 @@ classdef Exel
                 end
             end
             
+            try
             % if data streaming started, starting timer for this sensor
-            if comStarted
+            if strcmp(obj.AcquisitionStatus,'on')
                 % creating Timer obj
                 obj.Timer = timer();
                 obj.Timer.Period = (obj.PacketsBuffered) / (1.5 * obj.SamplingFrequency);
                 obj.Timer.StartDelay = 0.001;
-                obj.Timer.TaskToExecute = ceil((obj.AutoStop * obj.SamplingFrequency) / (obj.PacketsBuffered));
+                obj.Timer.TasksToExecute = ceil((obj.AutoStop * obj.SamplingFrequency) / (obj.PacketsBuffered));
                 obj.Timer.ExecutionMode = 'fixedRate';
-                obj.Timer.StartFcn = {@InternalStartFcn,obj};
-                obj.Timer.TimerFcn = {@InternalTimerFcn,obj};
-                obj.Timer.StopFcn  = {@InternalStopFcn, obj};
+                obj.Timer.StartFcn = {@obj.InternalStartFcn};
+                obj.Timer.TimerFcn = {@obj.InternalTimerFcn};
+                obj.Timer.StopFcn  = {@obj.InternalStopFcn};
                 
                 % starting the timer
                 start(obj.Timer)
+            end
+            catch
+                obj = ExelStop(obj);
             end
         end
         
@@ -290,26 +333,31 @@ classdef Exel
         %% EXELSTOP
         %%
         function obj = ExelStop(obj)
-            % printing
-            fprintf('--- STOPPING IMU %s ---\n',obj.ImuName)
-            
             % stopping timer, if necessary
-            if strcmp(obj.Timer.Running,'on')
+            if ~isempty(obj.Timer) && strcmp(obj.Timer.Running,'on')
                 stop(obj.Timer)
             end
             
             % stopping data streaming
             nAttempts = 0;
-            while nAttempts < 3
+            while strcmp(obj.ConnectionStatus,'open') && nAttempts < 3
                 try
-                    % removing remaining from the com object's input buffer
-                    % and setting the BytesAvailable property to 0
-                    % (with flushinput)
-                    flushinput(obj.BluetoothHandle)
+                    % stop printing
+                    fprintf('--- STOPPING IMU %s ---\n',obj.ImuName)
                     
                     % to tell the IMU to stop sending, we have to write 0x3A
                     fwrite(obj.BluetoothHandle,char(hex2dec('3A')))
-                    pause(0.2)
+                    pause(0.5), flushinput(obj.BluetoothHandle)
+                    obj.AcquisitionStatus = 'off';
+                    fprintf('    Stopped!! ;-)\n\n')
+                    
+                    % disconnection printing
+                    fprintf('--- DISCONNECTING IMU %s ---\n',obj.ImuName)
+                    
+                    % closing communication
+                    fclose(obj.BluetoothHandle); pause(0.2)
+                    obj.ConnectionStatus = 'closed';
+                    fprintf('    Disconnected!! :-O\n\n')
                 catch ME
                     nAttempts = nAttempts + 1;
                     fprintf('ATTEMPT #%d FAILED: %s\n',nAttempts,ME.message)
@@ -323,18 +371,19 @@ classdef Exel
     methods (Access = private)
         %% INTERNALSTARTFCN
         %%
-        function InternalStartFcn(~,~,obj)
-            % setting StartTime
-            obj.StartTime = datetime('now');
-            
+        function InternalStartFcn(obj)
             % cleaning up input com
             flushinput(obj.BluetoothHandle)
+            
+            % setting StartTime
+            obj.StartTime = datetime('now');
+            obj.LastSampleTime = datetime('now'); % even if not a sample
         end
         
         
         %% INTERNALTIMERFCN
         %%
-        function InternalTimerFcn(timerObj,~,obj)
+        function InternalTimerFcn(obj)
             try
                 % correcting displacement
                 if obj.Displacement > 0
@@ -345,40 +394,79 @@ classdef Exel
                 
                 % getting data if full buffer
                 if obj.BluetoothHandle.BytesAvailable >= obj.BufferSize
+                    % getting data
+                    rawData = fread(obj.BluetoothHandle);
+                    
+                    % recording time
                     obj.LastSampleTime = datetime('now');
                     
-                    [u.data( 1 : u.numOfPacketsBuffered, 1 : u.channels ), u.k] = getDataFromIMU( u.h.s( i ), u.packetSize, u.numOfPacketsBuffered, u.channels, u.k ); % txtFiles{i}
+                    % finding new pkt starts indexes
+                    pktStartIndexes = strfind(rawData',PacketHead)';
                     
-                    [ u.allFrameRetrieved((u.iii-1) * u.numOfPacketsBuffered + ( 1 : u.numOfPacketsBuffered )), u.s185 ] = getUnwrappedFrame( u.data( :, 3 ), u.s185 );
+                    % getting pkt lengths
+                    PktLength = [diff(pktStartIndexes); obj.BufferSize-pktStartIndexes(end,1)+1];
                     
-                    u.frameRetrieved  = ( u.iii - 1 ) * u.numOfPacketsBuffered + ( 1 : u.numOfPacketsBuffered ); % sd(i).frame - startPlottingFrame(i) + 1;
+                    % filtering only full packets
+                    pktStartIndexes = pktStartIndexes(PktLength == obj.PacketSize);
                     
-                    u.imuData( u.frameRetrieved', : ) = u.data;
+                    % computing PacketsRetrived and Displacement for next steps
+                    obj.PacketsRetrived = numel(pktStartIndexes);
+                    obj.Displacement = pktStartIndexes(1) - 1;
                     
-                    u.iii = u.iii + 1;
+                    % getting current row in ImuData
+                    cRow = height(obj.ImuData);
+                    
+                    % adding new rows on ImuData
+                    obj.ImuData = [obj.ImuData; ...
+                        array2table(zeros(obj.PacketsRetrived,numel(obj.ImuVars)), ...
+                        'VariableNames',obj.ImuVars)];
+                    
+                    % filling new rows
+                    for iPkt = 1:obj.PacketsRetrived
+                        for iData = 1:numel(obj.DataNames)
+                            cVar = obj.DataNames{1,iData};
+                            if ismember(cVar,obj.ImuVars)
+                                cPktIndexes = pktStartIndexes(iPkt) + obj.ByteGroups{iData,1};
+                                cData = rawData(cPktIndexes,1);
+                                cByteType = obj.ByteTypes{iData,1};
+                                cMultiplier = obj.Multiplier(iData,1);
+                                obj.ImuData.(cVar)(cRow+iPkt,1) = cMultiplier * ...
+                                    double(typecast(uint8(cData),cByteType));
+                            end
+                        end
+                    end
+                elseif seconds(datetime('now'),obj.LastSampleTime) > 10
+                    % generating an error, so the code continues in the
+                    % catch statement, where the communication will be
+                    % stopped
+                    error('Last sample aquired more than 10s ago')
+                end
+                
+                % chiamo la SamplingFcn definita dal main. La funzione DEVE
+                % essere definita esternamente sia al main che alla classe
+                if not(isempty(obj.SamplingFcn))
+                    obj.SamplingFcn(obj)
                 end
             catch ME
-                warnaME(ME)
-                stop(timerObj);
-            end
-            
-            % chiamo la SamplingFcn definita dal main. La funzione DEVE
-            % essere definita esternamente sia al main che alla classe
-            if not(isempty(obj.SamplingFcn))
-                obj.SamplingFcn(obj)
+                fprintf('*** COMMUNICATION FAILED (IMU %s) ***\n',obj.ImuName)
+                disp(ME.message)
+                stop(obj.Timer);
             end
         end
         
         
         %% INTERNALSTOPFCN
         %%
-        function InternalStopFcn(~,~,obj)
+        function InternalStopFcn(obj)
             % stopping data stream. This method is necessary since we have
             % an autostopped timer. When it stops, automatically it has to
             % call the ExelStop method.
             ExelStop(obj)
         end
         
+        
+        %% DEFAULTINTERNALFIGURE
+        %%
         function obj = DefaultInternalFigure(obj)
             obj.FigureHandle = figure('Visible',obj.FigureVisible);
             c = {'r','b','k'};
