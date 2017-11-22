@@ -1,4 +1,4 @@
-function IMULost = CheckLostPack(IMUdata)
+function ImuLost = CheckLostPack(ImuData)
 %% PER USARE LA FUNZIONE con file .txt 
 % caricare dalla Command Window con il comando 
 %% IMUdata=readtable(filename)
@@ -12,30 +12,30 @@ function IMULost = CheckLostPack(IMUdata)
 % WhereLost         è una tabella che dice per ogni pezzo perso quanti campioni
 %                   consecutivi, a che altezza e il tempo corrispondente
 %%
-Nsamples = size(IMUdata,1);
+Nsamples = size(ImuData,1);
 FS=50;
 
 %definisco la struttura
-IMULost=struct('islost',0,'NumberPackets',0,'PercPackets',0,'TimeLost',0,'WhereLost',[]);
+ImuLost=struct('islost',0,'NumberPackets',0,'PercPackets',0,'TimeLost',0,'WhereLost',[]);
 
-DeltaPackets=diff(IMUdata.ProgrNum); %ha dimensione pari a Nsample-1
-IMULost.WhereLost=table;
-IMULost.WhereLost.CutPointIndex=find(DeltaPackets>1); %se find=2 vuol dire che tra il campione 2 e 3 ho perso pacchetti
-IMULost.WhereLost.SamplesNum=DeltaPackets(IMULost.WhereLost.CutPointIndex)-1;
-IMULost.WhereLost.Time=IMULost.WhereLost.SamplesNum/FS;
+DeltaPackets=diff(ImuData.ProgrNum); %ha dimensione pari a Nsample-1
+ImuLost.WhereLost=table;
+ImuLost.WhereLost.CutPointIndex=find(DeltaPackets>1); %se find=2 vuol dire che tra il campione 2 e 3 ho perso pacchetti
+ImuLost.WhereLost.SamplesNum=DeltaPackets(ImuLost.WhereLost.CutPointIndex)-1;
+ImuLost.WhereLost.Time=ImuLost.WhereLost.SamplesNum/FS;
 
 if sum(DeltaPackets)==Nsamples-1
     disp('Nessun pacchetto perso');
 else
     disp('Sono stati persi dei pacchetti!');
     
-    IMULost.islost=1;
-    IMULost.NumberPackets = sum(DeltaPackets)-(Nsamples-1);
-    IMULost.PercPackets = IMULost.NumberPackets/Nsamples*100;
-    IMULost.TimeLost = IMULost.NumberPackets/FS;
+    ImuLost.islost=1;
+    ImuLost.NumberPackets = sum(DeltaPackets)-(Nsamples-1);
+    ImuLost.PercPackets = ImuLost.NumberPackets/Nsamples*100;
+    ImuLost.TimeLost = ImuLost.NumberPackets/FS;
     
     figure,stem(DeltaPackets-1),
-    title('Lost Packets'),ylim([-1 max(IMULost.WhereLost.SamplesNum)]),
+    title('Lost Packets'),ylim([-1 max(ImuLost.WhereLost.SamplesNum)]),
     xlabel('Tempo'),ylabel('Packets');
 
 end
