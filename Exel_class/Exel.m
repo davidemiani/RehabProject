@@ -66,6 +66,7 @@ classdef Exel < handle
             'MagX','MagY','MagZ', ...
             'Q0','Q1','Q2','Q3',  ...
             'Vbat'});
+        UserData = [];
     end
     
     % Le proprietà a settaggio privato sono:
@@ -83,9 +84,6 @@ classdef Exel < handle
         GyrFullScale      = 250;
         SamplingFrequency = 50;
         
-        FigureHandle      = [];
-        FigureVisible     = 'on';
-        
         SamplingFcn       = [];
         
         % immodificabili
@@ -94,6 +92,7 @@ classdef Exel < handle
         PacketsRetrived   = 0;
         ConnectionStatus  = 'closed';
         AcquisitionStatus = 'off';
+        InternalFigure = [];
     end
     
     % Le proprietà nascoste sono:
@@ -112,6 +111,7 @@ classdef Exel < handle
         PacketsBuffered
         PacketType
         PacketHead
+        PacketComm
         PacketSize
         BufferSize
         DataNumber
@@ -119,11 +119,6 @@ classdef Exel < handle
         ByteTypes
         DataNames
         Multiplier
-        
-        % InternalFigure
-        InternalFigureMode = true;
-        InternalFigureAxes = [];
-        InternalFigureLine = [];
         
         % Timer and Bluetooth
         Timer
@@ -140,20 +135,19 @@ classdef Exel < handle
         function obj = Exel(ImuName,varargin)
             %EXEL Constructs EXEL object.
             %
-            %    S = EXEL(IMUNAME) constructs an EXEL object for the
+            %    E = EXEL(IMUNAME) constructs an EXEL object for the
             %    sensor named IMUNAME with default attributes.
             %
-            %    S = EXEL(IMUNAME,'PropertyName1',PropertyValue1, ...
+            %    E = EXEL(IMUNAME,'PropertyName1',PropertyValue1, ...
             %        'PropertyName2',PropertyValue2,...)
             %    constructs an EXEL object in which the given
             %    PropertyName/PropertyValue pairs are set on the object.
             %
-            %    See also BLUETOOTH, TIMER.
+            %    See also EXELCONNECT, EXELSTART, EXELSTOP
             
             % mlock
-            % setting ImuName. Could be good to have a control with the
-            % instrhwinfo?
             obj.ImuName = ImuName;
+            obj.InternalFigure.Presence = true;
             
             % validating inputs
             for i = 1:2:numel(varargin)
@@ -190,26 +184,10 @@ classdef Exel < handle
                             mustBeMember(PropertyValue,[50,100,200])       % mancano valori
                             obj.SamplingFrequency = PropertyValue;
                             
-                        case {'FigureHandle','Figurehandle','figurehandle'}
+                        case {'UserData','Userdata','userdata'}
                             % validating FigureHandle
-                            if isa(PropertyValue,'matlab.ui.Figure')
-                                obj.FigureHandle = PropertyValue;
-                                obj.InternalFigureMode = false;
-                            else
-                                error('Line handle must be an AnimatedLine')
-                            end
-                            
-                        case {'FigureVisible','Figurevisible','figurevisible'}
-                            % validating FigureVisible
-                            if ischar(PropertyValue)
-                                if any(strcmp(PropertyValue,{'on','off'}))
-                                    obj.FigureVisible = PropertyValue;
-                                else
-                                    error('FigureVisible PropertyValue must be ''on'' or ''off''')
-                                end
-                            else
-                                error('FigureVisible PropertyValue must be a char')
-                            end
+                            obj.UserData = PropertyValue;
+                            obj.InternalFigure.Presence = false;
                             
                         case {'SamplingFcn','samplingFcn','samplingfcn'}
                             % validating Stop, Start & Sampling Fcn
@@ -234,6 +212,9 @@ classdef Exel < handle
                 case 'A'
                     obj.PacketType = hex2dec('81');
                     obj.PacketHead = [obj.HeaderByte, obj.PacketType];
+                    obj.PacketComm = [hex2dec('64'),hex2dec('01'), ...
+                        hex2dec('38'),hex2dec('00'),obj.PacketType];
+                    obj.PacketComm = [obj.PacketComm,mod(sum(obj.PacketComm),256)];
                     
                     obj.PacketSize = 11;
                     obj.BufferSize = obj.PacketsBuffered * obj.PacketSize;
@@ -241,15 +222,10 @@ classdef Exel < handle
                     obj.DataNumber = 7;
                     obj.ByteGroups = {0;1;[2;3];[4;5];[6;7];[8;9];10};
                     obj.ByteTypes = {'uint8';'uint8';'uint16';'int16';'int16';'int16';'uint8'};
-                    obj.DataNames = {'PacketHeader','PacketID','PacketCount','AccX','AccY','AccZ','CheckSum'};
+                    obj.DataNames = {'PacketHeader','PacketType','ProgrNum','AccX','AccY','AccZ','CheckSum'};
                     obj.Multiplier = [1;1;1;obj.Ka;obj.Ka;obj.Ka;1];
                 otherwise
                     error([obj.PacketName,' packet type still not supported.'])
-            end
-            
-            % if InternalFigure is necessary
-            if obj.InternalFigureMode
-                obj = DefaultInternalFigure(obj);
             end
         end
         
@@ -273,10 +249,37 @@ classdef Exel < handle
                 try
                     fopen(obj.BluetoothHandle); %opens the serial port
                     pause(1), obj.ConnectionStatus = 'open';
-                    fprintf('    Connected!! :-)\n\n')
+                    fprintf('    Connected\n')
                 catch ME
                     nAttempts = nAttempts + 1;
-                    fprintf('ATTEMPT #%d FAILED: %s\n\n',nAttempts,ME.message)
+                    fprintf('    ATTEMPT #%d FAILED: %s\n',nAttempts,ME.message)
+                    pause(0.5)
+                end
+            end
+            
+            % we have to say the sensor what packet type it has to send us
+            parSetted = 0;
+            nAttempts = 0;
+            while ~parSetted && nAttempts < 3
+                try
+                    % sending packet type code
+                    fwrite(obj.BluetoothHandle,uint8(obj.PacketComm))
+                    pause(1)
+                    if obj.BluetoothHandle.BytesAvailable
+                        acknowledgement = fread(obj.BluetoothHandle,1);
+                        if acknowledgement==1
+                            parSetted = 1;
+                            fprintf('    PacketType Sended\n')
+                        else
+                            error('PacketType not succesfully received')
+                        end
+                    else
+                        error('Acknoledge byte not received')
+                    end
+                    fprintf('    SUCCESS!! :-)\n\n')
+                catch ME
+                    nAttempts = nAttempts + 1;
+                    fprintf('    ATTEMPT #%d FAILED: %s\n',nAttempts,ME.message)
                     pause(0.5)
                 end
             end
@@ -287,7 +290,7 @@ classdef Exel < handle
         %%
         function obj = ExelStart(obj)
             % printing
-            fprintf('--- STARTING   IMU %s ---\n',obj.ImuName)
+            fprintf('--- STARTING IMU %s ---\n',obj.ImuName)
             
             % starting data streaming
             nAttempts = 0;
@@ -303,27 +306,27 @@ classdef Exel < handle
                     fprintf('    Acquisition Started!! :-D\n\n')
                 catch ME
                     nAttempts = nAttempts + 1;
-                    fprintf('ATTEMPT #%d FAILED: %s\n',nAttempts,ME.message)
+                    fprintf('    ATTEMPT #%d FAILED: %s\n',nAttempts,ME.message)
                     pause(0.5)
                 end
             end
             
             try
-            % if data streaming started, starting timer for this sensor
-            if strcmp(obj.AcquisitionStatus,'on')
-                % creating Timer obj
-                obj.Timer = timer();
-                obj.Timer.Period = (obj.PacketsBuffered) / (1.5 * obj.SamplingFrequency);
-                obj.Timer.StartDelay = 0.001;
-                obj.Timer.TasksToExecute = ceil((obj.AutoStop * obj.SamplingFrequency) / (obj.PacketsBuffered));
-                obj.Timer.ExecutionMode = 'fixedRate';
-                obj.Timer.StartFcn = {@obj.InternalStartFcn};
-                obj.Timer.TimerFcn = {@obj.InternalTimerFcn};
-                obj.Timer.StopFcn  = {@obj.InternalStopFcn};
-                
-                % starting the timer
-                start(obj.Timer)
-            end
+                % if data streaming started, starting timer for this sensor
+                if strcmp(obj.AcquisitionStatus,'on')
+                    % creating Timer obj
+                    obj.Timer = timer();
+                    obj.Timer.Period = (obj.PacketsBuffered) / (1.5 * obj.SamplingFrequency);
+                    obj.Timer.StartDelay = 0.001;
+                    obj.Timer.TasksToExecute = ceil((obj.AutoStop * obj.SamplingFrequency) / (obj.PacketsBuffered));
+                    obj.Timer.ExecutionMode = 'fixedRate';
+                    obj.Timer.StartFcn = {@obj.InternalStartFcn};
+                    obj.Timer.TimerFcn = {@obj.InternalTimerFcn};
+                    obj.Timer.StopFcn  = {@obj.InternalStopFcn};
+                    
+                    % starting the timer
+                    start(obj.Timer)
+                end
             catch
                 obj = ExelStop(obj);
             end
@@ -360,7 +363,7 @@ classdef Exel < handle
                     fprintf('    Disconnected!! :-O\n\n')
                 catch ME
                     nAttempts = nAttempts + 1;
-                    fprintf('ATTEMPT #%d FAILED: %s\n',nAttempts,ME.message)
+                    fprintf('    ATTEMPT #%d FAILED: %s\n',nAttempts,ME.message)
                     pause(0.5)
                 end
             end
@@ -371,7 +374,12 @@ classdef Exel < handle
     methods (Access = private)
         %% INTERNALSTARTFCN
         %%
-        function InternalStartFcn(obj)
+        function InternalStartFcn(obj,~,~)
+            % setting figure visible
+            if obj.InternalFigure.Presence
+                obj = InternalDefaultFigure(obj);
+            end
+            
             % cleaning up input com
             flushinput(obj.BluetoothHandle)
             
@@ -383,7 +391,7 @@ classdef Exel < handle
         
         %% INTERNALTIMERFCN
         %%
-        function InternalTimerFcn(obj)
+        function InternalTimerFcn(obj,~,~)
             try
                 % correcting displacement
                 if obj.Displacement > 0
@@ -401,7 +409,7 @@ classdef Exel < handle
                     obj.LastSampleTime = datetime('now');
                     
                     % finding new pkt starts indexes
-                    pktStartIndexes = strfind(rawData',PacketHead)';
+                    pktStartIndexes = strfind(rawData',obj.PacketHead)';
                     
                     % getting pkt lengths
                     PktLength = [diff(pktStartIndexes); obj.BufferSize-pktStartIndexes(end,1)+1];
@@ -435,7 +443,7 @@ classdef Exel < handle
                             end
                         end
                     end
-                elseif seconds(datetime('now'),obj.LastSampleTime) > 10
+                elseif seconds(datetime('now')-obj.LastSampleTime) > 10
                     % generating an error, so the code continues in the
                     % catch statement, where the communication will be
                     % stopped
@@ -445,10 +453,11 @@ classdef Exel < handle
                 % chiamo la SamplingFcn definita dal main. La funzione DEVE
                 % essere definita esternamente sia al main che alla classe
                 if not(isempty(obj.SamplingFcn))
-                    obj.SamplingFcn(obj)
+                    obj = obj.SamplingFcn(obj); %#okAGROW
                 end
             catch ME
-                fprintf('*** COMMUNICATION FAILED (IMU %s) ***\n',obj.ImuName)
+                fprintf('*** COMMUNICATION FAILED (IMU %s) ***\n\n',obj.ImuName)
+                warnaME(ME)
                 disp(ME.message)
                 stop(obj.Timer);
             end
@@ -457,31 +466,98 @@ classdef Exel < handle
         
         %% INTERNALSTOPFCN
         %%
-        function InternalStopFcn(obj)
+        function InternalStopFcn(obj,~,~)
             % stopping data stream. This method is necessary since we have
             % an autostopped timer. When it stops, automatically it has to
             % call the ExelStop method.
-            ExelStop(obj)
+            ExelStop(obj);
         end
         
         
-        %% DEFAULTINTERNALFIGURE
+        %% INTERNALDEFAULTFIGURE
         %%
-        function obj = DefaultInternalFigure(obj)
-            obj.FigureHandle = figure('Visible',obj.FigureVisible);
+        function obj = InternalDefaultFigure(obj)
+            % creating figure
+            Figure = figure;
+            
+            % defining var names
+            VarNames = { ...
+                'AccX','AccY','AccZ'; ...
+                'GyrX','GyrY','GyrZ'; ...
+                'MagX','MagY','MagZ'  ...
+                };
+            
+            % defining colors and titles
             c = {'r','b','k'};
             t = {'Acc';'Gyr';'Mag'};
-            for i = 1:3
-                Axes(i,1) = subplot(3,1,i); %#okAGROW
-                for j = 1:3
-                    Line(i,j) = animatedline(Axes(i,1),'Color',c{1,j}); %#okAGROW
-                    % other options here
+            u = {'Acc (m\cdot s^{-2})'; ...
+                '\omega (rad\cdot s^{-1})'; ...
+                'Mag Field (T)'};
+            
+            % defining sizes
+            [nAxes,nLines] = size(VarNames);
+            
+            % creating Axes and Lines
+            for i = 1:nAxes
+                Axes(i,1) = subplot(nAxes,1,i); %#okAGROW
+                Axes(i,1).XLim = [0,10]; %#okAGROW
+                Axes(i,1).FontSize = 15; %#okAGROW
+                Axes(i,1).YMinorGrid = 'on'; %#okAGROW
+                Axes(i,1).YMinorTick = 'on'; %#okAGROW
+                for j = 1:nLines
+                    Lines(i,j) = animatedline(Axes(i,1),'Color',c{1,j}); %#okAGROW
                 end
                 title(t{i,1})
+                legend(VarNames(i,:))
+                xlabel('time (s)')
+                ylabel(u{i,1})
             end
             linkaxes(Axes,'x')
-            obj.InternalFigureAxes = Axes;
-            obj.InternalFigureLine = Line;
+            
+            % assigning Internal Figure fields
+            obj.InternalFigure.Axes = Axes;
+            obj.InternalFigure.Lines = Lines;
+            obj.InternalFigure.Figure = Figure;
+            obj.InternalFigure.VarNames = VarNames;
+            obj.InternalFigure.LastFrame = 0;
+            
+            % setting SamplingFcn
+            obj.SamplingFcn = @obj.InternalUpdateFigure;
+        end
+        
+        
+        %% INTERNALUPDATEFIGURE
+        %%
+        function obj = InternalUpdateFigure(obj,~,~)
+            if height(obj.ImuData)-obj.InternalFigure.LastFrame >= obj.SamplingFrequency/5
+                % getting dimensions
+                [nAxes,nLines] = size(obj.InternalFigure.VarNames);
+                
+                % computing time
+                time = (obj.InternalFigure.LastFrame+1:height(obj.ImuData))'/ ...
+                    obj.SamplingFrequency;
+                
+                % setting new XLim if necessary
+                if any(time > obj.InternalFigure.Axes(1,1).XLim(1,2))
+                    obj.InternalFigure.Axes(1,1).XLim = ...
+                            obj.InternalFigure.Axes(1,1).XLim + 10;
+                end
+                
+                for i = 1:nAxes
+                    for j = 1:nLines
+                        addpoints(obj.InternalFigure.Lines(i,j), ...
+                            time, ...
+                            obj.ImuData.(obj.InternalFigure.VarNames{i,j})( ...
+                            obj.InternalFigure.LastFrame+1:end,1));
+                    end
+                end
+                
+                % showing now new values
+                drawnow
+                
+                % updating last frame
+                obj.InternalFigure.LastFrame = height(obj.ImuData);
+            end
         end
     end
     
