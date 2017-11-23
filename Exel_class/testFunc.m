@@ -1,11 +1,30 @@
 function obj = testFunc(obj)
-if height(obj.ImuData)-obj.FigureHandle.LastFrame >= obj.SamplingFrequency
-    % getting current animated line handle
-    subplot(ismember(obj.FigureHandle.ImuNames,obj.ImuName);
+if height(obj.ImuData)-obj.UserData.LastFrame >= obj.SamplingFrequency/5
+    % getting current axis
+    cAxes = find(ismember(obj.UserData.ImuNames,obj.ImuName));
     
-    % adding points to the graph
-    addpoints(obj.FigureHandle.Lines(1,1),obj.ImuData.AccX(obj.FigureHandle.LastFrame:end,1));
-    addpoints(obj.FigureHandle.Lines(2,1),obj.ImuData.AccY(obj.FigureHandle.LastFrame:end,1));
-    addpoints(obj.FigureHandle.Lines(3,1),obj.ImuData.AccZ(obj.FigureHandle.LastFrame:end,1));
+    % computing time
+    time = (obj.UserData.LastFrame+1:height(obj.ImuData))'/ ...
+        obj.SamplingFrequency;
+    
+    % setting new XLim if necessary
+    if any(time > obj.UserData.Axes(cAxes,1).XLim(1,2))
+        obj.UserData.Axes(cAxes,1).XLim = ...
+            obj.UserData.Axes(cAxes,1).XLim + 10;
+    end
+    
+    % adding points
+    for j = 1:size(obj.UserData.VarNames,2)
+        addpoints(obj.UserData.Lines(cAxes,j), ...
+            time, ...
+            obj.ImuData.(obj.UserData.VarNames{cAxes,j})( ...
+            obj.UserData.LastFrame+1:end,1));
+    end
+    
+    % showing now new values
+    drawnow
+    
+    % updating last frame
+    obj.UserData.LastFrame = height(obj.ImuData);
 end
 end
