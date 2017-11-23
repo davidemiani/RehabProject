@@ -23,7 +23,7 @@ switch Exelobj.Segment
         Angles.Thorax.Frontal.Acos =real(...
             acosd( round(-Exelobj.ImuData.AccX/g, 1)))'-90;%-AccX -90;
         
-    case 'Homer'
+    case 'Homer' 
         
         %Hom Sagittal & Frontal Atan
         
