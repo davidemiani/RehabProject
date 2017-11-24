@@ -1,7 +1,7 @@
 function [Angles] = computeAngles_MOD(Exelobj)
 
 g=9.81;
-L=length(Exelobj.ImuData.AccX);
+
 % % filter signal
 % Exelobj.ImuData{:,3:5} = filterAcc(Exelobj.ImuData{:,3:5}', 50, 'off')';
 

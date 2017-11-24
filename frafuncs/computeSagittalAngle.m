@@ -11,5 +11,5 @@ ind2 = ~ind1;
 
 % computing Acos
 Acos(ind1,1) = real(acosd(round(-AccX(ind1,1)/9.807,1)))-90;
-Acos(ind2,1) = real(acosd(round(-AccX(ind2,1)/9.807,1))); 
+Acos(ind2,1) = real(acosd(round(AccX(ind2,1)/9.807,1)))+90; 
 end
