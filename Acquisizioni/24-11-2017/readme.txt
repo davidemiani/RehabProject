@@ -1,13 +1,16 @@
 Acquisizioni del 24/11/2017
 
+
 Lo script mainAcquisition.m esegue l'acquisizione e salva il contenuto di
 ExelObj.ImuData in formato 'dataHum' (lo stesso utilizzato per le
 acquisizioni precedenti) nella sottocartella data. Lo script gestisce tutto
 il processo di acquisizione, mostrando a schermo l'andamento delle
-accelerazioni ed infine chiede all'utente il nome del file da salvare.
+accelerazioni e gli angoli calcolati con le funzioni definite in FraFuncs
+sotto il nome di computeFrontalAngle.m e computeSagittalAngle.m.
+Infine chiede all'utente il nome del file da salvare.
 
 Cosa deve fare chi acquisisce:
-* Cambiare, se vuole, i parametri impostati nella sezione INIT;
+* cambiare, se necessario, i parametri impostati nella sezione INIT;
 * rispettare, per il nome del file, il formato: Angolo_NumeroProvaPiano.mat
 
 
@@ -18,6 +21,7 @@ sviluppato due funzioni computeFrontalAngle e computSagittalAngle, che
 prendono in ingresso le accelerazioni di interesse e restituiscono Acos ed
 Atan come arry di double. Utilizzare queste funzioni e modificare queste
 ultime per calcolare gli angoli negli script di statistica.
+
 
 mainStatistics
 per ora uguale al vecchio mainValutazionePrecisioneAngoli, ho modificato

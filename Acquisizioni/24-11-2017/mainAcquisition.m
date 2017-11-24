@@ -7,18 +7,14 @@ csd = fileparts(mfilename('fullpath')); % current script dir
 dataPath = fullfile(csd,'data');
 
 repoPath = fileparts(fileparts(csd));
-davefuncs = fullfile(repoPath,'davefuncs');
-exelclass = fullfile(repoPath,'Exel_class');
-frafuncs  = fullfile(repoPath,'frafuncs');
-
-addpath(davefuncs)
-addpath(exelclass)
-addpath(frafuncs)
+addpath(fullfile(repoPath,'davefuncs'))
+addpath(fullfile(repoPath,'Exel_class'))
+addpath(fullfile(repoPath,'frafuncs'))
 
 clc
 close all
 timerdeleteall
-clearExcept csd dataPath davefuncs exelclass frafuncs ExelObj
+clearExcept csd dataPath ExelObj
 
 
 %% INIT
@@ -26,6 +22,7 @@ clearExcept csd dataPath davefuncs exelclass frafuncs ExelObj
 ExelName = 'EXLs3_0067'; % inserire qui nome del sensore che si sta usando
 Segment = 'Homer'; % o Thorax
 TestingTime = 15; % inserire qui il TestingTime, in secondi
+UserData = InitFigure();
 
 
 %% ACQUISITION
@@ -40,10 +37,12 @@ if exist('ExelObj','var') && isa(ExelObj,'Exel') && ...
         ExelObj.AutoStop == TestingTime
     % if no properties is changed, cleaning up old cleanable fields
     ExelObj = ExelClean(ExelObj);
+    ExelObj.UserData = UserData;
 else
     % in this case, we have to recreate the object
     % slow procedure, but necessary
-    ExelObj = Exel(ExelName,'Segment',Segment,'AutoStop',TestingTime);
+    ExelObj = Exel(ExelName,'Segment',Segment,'AutoStop',TestingTime, ...
+        'UserData',UserData,'SamplingFcn',@SamplingFcn);
 end
 
 try
@@ -51,6 +50,9 @@ try
     if strcmp(ExelObj.ConnectionStatus,'closed')
         ExelObj = ExelConnect(ExelObj);
     end
+    
+    % showing figure
+    ExelObj.UserData.Figure.Visible = 'on';
     
     % starting if necessary
     if strcmp(ExelObj.ConnectionStatus,'open') && ...
@@ -90,8 +92,5 @@ cd(csd)
 %% ENDING
 %%
 warning('on','MATLAB:structOnObject')
-rmpath(davefuncs)
-rmpath(exelclass)
-rmpath(frafuncs)
 clearExcept ExelObj
 
