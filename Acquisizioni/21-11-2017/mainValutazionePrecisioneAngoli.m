@@ -6,8 +6,9 @@ clear
 close all
 clc
 addpath(fullfile(fileparts(fileparts(pwd)),'davefuncs')) % aggiungo al path cartella davefuncs
-addpath(fullfile(fileparts(fileparts(pwd)),'frafuncs'))
-addpath(fullfile(pwd,'data'))
+addpath(fullfile(fileparts(fileparts(pwd)),'frafuncs')) % aggiungo al path cartella frafuncs
+addpath(fullfile(pwd,'data')) % aggiungo al path data
+addpath(fullfile(fileparts(pwd),'24-11-2017', 'data')) % aggiungo le acquisizioni del 24/11
 
 %% Piano frontale
 
