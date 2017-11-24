@@ -67,6 +67,7 @@ classdef Exel < handle
             'Q0','Q1','Q2','Q3',  ...
             'Vbat'});
         UserData = [];
+        InternalFigure = [];
     end
     
     % Le proprietà a settaggio privato sono:
@@ -87,12 +88,12 @@ classdef Exel < handle
         SamplingFcn       = [];
         
         % immodificabili
+        Timer
         StartTime         = [];
         LastSampleTime    = [];
         PacketsRetrived   = 0;
         ConnectionStatus  = 'closed';
         AcquisitionStatus = 'off';
-        InternalFigure = [];
     end
     
     % Le proprietà nascoste sono:
@@ -120,8 +121,6 @@ classdef Exel < handle
         DataNames
         Multiplier
         
-        % Timer and Bluetooth
-        Timer
         Displacement = 0;
         BluetoothHandle
     end
@@ -339,6 +338,7 @@ classdef Exel < handle
             % stopping timer, if necessary
             if ~isempty(obj.Timer) && strcmp(obj.Timer.Running,'on')
                 stop(obj.Timer)
+                delete(obj.Timer)
             end
             
             % stopping data streaming
@@ -367,6 +367,10 @@ classdef Exel < handle
                     pause(0.5)
                 end
             end
+        end
+        
+        function obj = ExelClean(obj)
+            obj.ImuData = cell2table(cell(0,16),'VariableNames',obj.ImuVars);
         end
     end
     
@@ -480,6 +484,9 @@ classdef Exel < handle
             % creating figure
             Figure = figure;
             
+            % defining AxesWidth (in sec)
+            AxesWidth = 15;
+            
             % defining var names
             VarNames = { ...
                 'AccX','AccY','AccZ'; ...
@@ -500,7 +507,7 @@ classdef Exel < handle
             % creating Axes and Lines
             for i = 1:nAxes
                 Axes(i,1) = subplot(nAxes,1,i); %#okAGROW
-                Axes(i,1).XLim = [0,10]; %#okAGROW
+                Axes(i,1).XLim = [0,AxesWidth]; %#okAGROW
                 Axes(i,1).FontSize = 15; %#okAGROW
                 Axes(i,1).YMinorGrid = 'on'; %#okAGROW
                 Axes(i,1).YMinorTick = 'on'; %#okAGROW
@@ -519,6 +526,7 @@ classdef Exel < handle
             obj.InternalFigure.Lines = Lines;
             obj.InternalFigure.Figure = Figure;
             obj.InternalFigure.VarNames = VarNames;
+            obj.InternalFigure.AxesWidth = AxesWidth;
             obj.InternalFigure.LastFrame = 0;
             
             % setting SamplingFcn
@@ -540,7 +548,8 @@ classdef Exel < handle
                 % setting new XLim if necessary
                 if any(time > obj.InternalFigure.Axes(1,1).XLim(1,2))
                     obj.InternalFigure.Axes(1,1).XLim = ...
-                            obj.InternalFigure.Axes(1,1).XLim + 10;
+                            obj.InternalFigure.Axes(1,1).XLim + ...
+                            obj.InternalFigure.AxesWidth;
                 end
                 
                 for i = 1:nAxes

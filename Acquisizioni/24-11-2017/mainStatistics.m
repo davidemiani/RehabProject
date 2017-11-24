@@ -1,12 +1,16 @@
 % Script per la valutazione della precisione del calcolo degli angoli con
 % inclinometro
-% 22/11/2017
+% 24/11/2017
 
-clear 
-close all
-clc
-addpath(fullfile(fileparts(pwd), 'davefuncs')) % aggiungo al path cartella davefuncs
-addpath(fullfile(pwd, 'Acquisiz_22112017'))
+
+%% FILEPATHS
+%%
+addpath(fullfile(fileparts(fileparts(pwd)), 'davefuncs')) % aggiungo al path cartella davefuncs
+addpath(fullfile(fileparts(fileparts(pwd)), 'frafuncs'))
+pulisci
+
+datapath = fullfile(pwd,'data');
+
 
 %% Piano frontale
 
@@ -18,9 +22,12 @@ piano = 'F';
 nAcqu = 5;
 for j = 1:nAngoli
     for i = 1:nAcqu
-        nomeFile = [angoli{1, j}, '_', num2str(i), piano];
-        struttura = load(nomeFile);
-        datiFront.(['deg' angoli{j}]) = [datiFront.(['deg' angoli{j}]); struttura.dataHum];
+        filename = [angoli{1, j}, '_', num2str(i), piano];
+        filepath = fullfile(datapath,filename);
+        if exist(filepath,'file')
+            struttura = load(filepath);
+            datiFront.(['deg' angoli{j}]) = [datiFront.(['deg' angoli{j}]); struttura.dataHum];
+        end
     end
 end
 
@@ -32,8 +39,9 @@ angoliCalcolatiFront = struct('deg0', struct('atan', [], 'acos', []), ...
 for j = 1:nAngoli
     campoAngolo = ['deg' angoli{j}];
     datiPerAngolo = datiFront.(campoAngolo);
-    angoliCalcolatiFront.(campoAngolo).atan = atan2d(datiPerAngolo( :, 6 ), datiPerAngolo( :, 5 ))';
-    angoliCalcolatiFront.(campoAngolo).acos = real( acosd( round( - daxtiPerAngolo( :, 6 ).* 2 / 2^15, 1)))'-90;
+    [angoliCalcolatiFront.(campoAngolo).atan, ...
+        angoliCalcolatiFront.(campoAngolo).acos] = ...
+        computeFrontalAngle(datiPerAngolo(:,5),datiPerAngolo(:,6));
 end
 
 % Plottiamo
