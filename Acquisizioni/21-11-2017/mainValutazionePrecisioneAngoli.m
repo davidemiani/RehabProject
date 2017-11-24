@@ -5,9 +5,9 @@
 clear 
 close all
 clc
-addpath(fullfile(fileparts(fileparts(pwd)), 'davefuncs')) % aggiungo al path cartella davefuncs
-addpath(fullfile(fileparts(fileparts(pwd)), 'frafuncs'))
-addpath(fullfile(pwd, 'Acquisiz_22112017'))
+addpath(fullfile(fileparts(fileparts(pwd)),'davefuncs')) % aggiungo al path cartella davefuncs
+addpath(fullfile(fileparts(fileparts(pwd)),'frafuncs'))
+addpath(fullfile(pwd,'data'))
 
 %% Piano frontale
 
@@ -33,8 +33,8 @@ angoliCalcolatiFront = struct('deg0', struct('atan', [], 'acos', []), ...
 for j = 1:nAngoli
     campoAngolo = ['deg' angoli{j}];
     datiPerAngolo = datiFront.(campoAngolo) * 2 * 9.807 / 32768;
-    [angoliCalcolatiFront.(campoAngolo).atan, ...
-    angoliCalcolatiFront.(campoAngolo).acos] = ...
+    [angoliCalcolatiFront.(campoAngolo).acos, ...
+    angoliCalcolatiFront.(campoAngolo).atan] = ...
     computeFrontalAngle(datiPerAngolo(:,5),datiPerAngolo(:,6));
 end
 
