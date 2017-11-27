@@ -19,20 +19,10 @@ clearExcept csd dataPath ExelObj
 
 %% INIT
 %%
-<<<<<<< HEAD
-ExelName = 'EXLs3_0159'; % inserire qui nome del sensore che si sta usando
-=======
 ExelName = 'EXLs3_0067'; % inserire qui nome del sensore che si sta usando
-<<<<<<< HEAD
 ExelFigure = InitFigure();
 %Segment = 'Homer'; % o Thorax
 %TestingTime = 120; % inserire qui il TestingTime, in secondi
-=======
->>>>>>> d33eb242fa27acabced73707ec22527ce1a5f840
-Segment = 'Homer'; % o Thorax
-TestingTime = 120; % inserire qui il TestingTime, in secondi
-UserData = InitFigure();
->>>>>>> fba4b1f5645ea855036dfd6cda686483015fd084
 
 
 %% ACQUISITION
