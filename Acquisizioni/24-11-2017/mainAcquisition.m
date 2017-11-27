@@ -20,9 +20,9 @@ clearExcept csd dataPath ExelObj
 %% INIT
 %%
 ExelName = 'EXLs3_0067'; % inserire qui nome del sensore che si sta usando
-Segment = 'Homer'; % o Thorax
-TestingTime = 120; % inserire qui il TestingTime, in secondi
-UserData = InitFigure();
+ExelFigure = InitFigure();
+%Segment = 'Homer'; % o Thorax
+%TestingTime = 120; % inserire qui il TestingTime, in secondi
 
 
 %% ACQUISITION
@@ -31,53 +31,34 @@ UserData = InitFigure();
 % the internal reference method. In this way I am not deleting every time
 % all the object, but only a few fields, so the initialization of the
 % bluetooth connection is sensibly faster.
-if exist('ExelObj','var') && isa(ExelObj,'Exel') && ...
-        strcmp(ExelObj.ImuName,ExelName) && ...
-        strcmp(ExelObj.Segment,Segment) && ...
-        ExelObj.AutoStop == TestingTime
-    % if no properties is changed, cleaning up old cleanable fields
-    ExelObj = ExelClean(ExelObj);
-    %ExelObj.UserData = UserData;
-else
+if ~exist('ExelObj','var')
     % in this case, we have to recreate the object
     % slow procedure, but necessary
-    ExelObj = Exel(ExelName,'Segment',Segment,'AutoStop',TestingTime); %, ...
-        %'UserData',UserData,'SamplingFcn',@SamplingFcn);
+    ExelObj = Exel(ExelName);
+    %set(ExelObj,'ExelFigure',ExelFigure)
 end
 
 try
-    % connecting if necessary
-    if strcmp(ExelObj.ConnectionStatus,'closed')
-        ExelObj = ExelConnect(ExelObj);
-    end
-    
-    % showing figure
-    %ExelObj.UserData.Figure.Visible = 'on';
-    
-    % starting if necessary
-    if strcmp(ExelObj.ConnectionStatus,'open') && ...
-            strcmp(ExelObj.AcquisitionStatus,'off')
-        ExelObj = ExelStart(ExelObj);
-    end
+    start(ExelObj)
 catch ME
-    warnaME(ME)
-    ExelObj = ExelStop(ExelObj);
+    disconnect(ExelObj)
+    rethrow(ME)
 end
 
 
 %% SAVING DATA
 %%
 % waiting for the acquisition stop
-waitfor(ExelObj.Timer) % untill the timer is not deleted
+waitfor(ExelObj,'AcquisitionStatus','off')
 
 % picking data to save
-dataHum = [repmat(32,height(ExelObj.ImuData),1), ...
-    ExelObj.ImuData.PacketType, ...
-    ExelObj.ImuData.ProgrNum, ...
-    ExelObj.ImuData.AccX, ...
-    ExelObj.ImuData.AccY, ...
-    ExelObj.ImuData.AccZ, ...
-    floor(255*rand(height(ExelObj.ImuData),1))]; 
+dataHum = [repmat(32,height(ExelObj.ExelData),1), ...
+    ExelObj.ExelData.PacketType, ...
+    ExelObj.ExelData.ProgrNum, ...
+    ExelObj.ExelData.AccX, ...
+    ExelObj.ExelData.AccY, ...
+    ExelObj.ExelData.AccZ, ...
+    floor(255*rand(height(ExelObj.ExelData),1))]; 
 
 % jumping to data directory
 cd(dataPath)
