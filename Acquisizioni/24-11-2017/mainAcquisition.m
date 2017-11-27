@@ -19,9 +19,9 @@ clearExcept csd dataPath ExelObj
 
 %% INIT
 %%
-ExelName = 'EXLs3_0070'; % inserire qui nome del sensore che si sta usando
+ExelName = 'EXLs3_0067'; % inserire qui nome del sensore che si sta usando
 Segment = 'Homer'; % o Thorax
-TestingTime = 150; % inserire qui il TestingTime, in secondi
+TestingTime = 120; % inserire qui il TestingTime, in secondi
 UserData = InitFigure();
 
 
@@ -37,12 +37,12 @@ if exist('ExelObj','var') && isa(ExelObj,'Exel') && ...
         ExelObj.AutoStop == TestingTime
     % if no properties is changed, cleaning up old cleanable fields
     ExelObj = ExelClean(ExelObj);
-    ExelObj.UserData = UserData;
+    %ExelObj.UserData = UserData;
 else
     % in this case, we have to recreate the object
     % slow procedure, but necessary
-    ExelObj = Exel(ExelName,'Segment',Segment,'AutoStop',TestingTime, ...
-        'UserData',UserData,'SamplingFcn',@SamplingFcn);
+    ExelObj = Exel(ExelName,'Segment',Segment,'AutoStop',TestingTime); %, ...
+        %'UserData',UserData,'SamplingFcn',@SamplingFcn);
 end
 
 try
@@ -52,7 +52,7 @@ try
     end
     
     % showing figure
-    ExelObj.UserData.Figure.Visible = 'on';
+    %ExelObj.UserData.Figure.Visible = 'on';
     
     % starting if necessary
     if strcmp(ExelObj.ConnectionStatus,'open') && ...
