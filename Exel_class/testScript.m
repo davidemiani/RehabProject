@@ -5,15 +5,16 @@ test = 1;
 %% 1 IMU
 %%
 if test == 1
-    ExelName = 'EXLs3_0070';
+    ExelName = 'EXLs3_0067';
     if ~exist('obj','var') || ~strcmp(obj.ImuName,ExelName)
-        obj = Exel(ExelName,'AutoStop',300);
+        obj = Exel(ExelName,'AutoStop',30);
     end
     if strcmp(obj.ConnectionStatus,'closed')
-        obj = ExelConnect(obj);
+        ExelClean(obj);
+        ExelConnect(obj);
     end
     if strcmp(obj.ConnectionStatus,'open') && strcmp(obj.AcquisitionStatus,'off')
-        obj = ExelStart(obj);
+        ExelStart(obj);
     end
 end
 
@@ -23,7 +24,7 @@ end
 %%
 if test == 2
     % defining names
-    ExelNames = {'EXLs3_0070'; 'EXLs3_0067'};
+    ExelNames = {'EXLs3'; 'EXLs3_0067'};
     n = numel(ExelNames);
     
     % creating figure

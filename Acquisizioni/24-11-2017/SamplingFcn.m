@@ -1,5 +1,5 @@
 function obj = SamplingFcn(obj)
-if height(obj.ImuData)-obj.UserData.LastFrame >= obj.SamplingFrequency/5
+if height(obj.ImuData)-obj.UserData.LastFrame >= obj.SamplingFrequency
     % getting indexes
     ind = (obj.UserData.LastFrame+1:height(obj.ImuData))';
     
