@@ -1,5 +1,5 @@
 pulisci
-b = Bluetooth('EXLs3_0067');
+b = Bluetooth('EXLs3');
 
 i = 0;
 run = true;
@@ -11,7 +11,8 @@ while i<=79 && run
         run = false;
     catch
         toc
-        i = i+1;
+        
         fprintf('Channel #%d not supported\n',i)
+        i = i+1;
     end
 end
