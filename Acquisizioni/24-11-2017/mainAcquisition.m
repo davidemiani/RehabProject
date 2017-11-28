@@ -13,13 +13,12 @@ addpath(fullfile(repoPath,'frafuncs'))
 
 clc
 close all
-timerdeleteall
-clearExcept csd dataPath ExelObj
+clearExcept csd dataPath
 
 
 %% INIT
 %%
-ExelName = 'EXLs3_0067'; % inserire qui nome del sensore che si sta usando
+ExelName = 'EXLs3'; % inserire qui nome del sensore che si sta usando
 ExelFigure = InitFigure();
 %Segment = 'Homer'; % o Thorax
 %TestingTime = 120; % inserire qui il TestingTime, in secondi
