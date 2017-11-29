@@ -17,17 +17,6 @@ function connect(obj)
 % printing
 fprintf('--- CONNECTING    %s ---\n',obj.ExelName)
 
-% checking if the BluetoothObj already exist
-if isempty(obj.BluetoothObj)
-    try
-        obj.BluetoothObj = Bluetooth(obj.ExelName,1);
-        fprintf('    Bluetooth object created\n')
-    catch ME
-        fprintf('    Bluetooth error\n\n')
-        rethrow(ME)
-    end
-end
-
 % updating BluetoothFcn properties
 obj.BluetoothObj.InputBufferSize = obj.BufferSize * 2;
 obj.BluetoothObj.BytesAvailableFcnMode = 'byte';
@@ -47,7 +36,7 @@ end
 
 % we have to say the sensor what packet type it has to send us
 try
-    fwrite(obj.BluetoothObj,uint8(obj.PacketComm))
+    fwrite(obj.BluetoothObj,uint8(obj.PacketTypeCommand))
     fprintf('    PacketType sent\n')
 catch ME
     fprintf('    PacketType error\n\n')
