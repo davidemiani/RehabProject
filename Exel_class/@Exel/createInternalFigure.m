@@ -30,7 +30,8 @@ for i = 1:nAxes
     Axes(i,1).YMinorGrid = 'on'; %#okAGROW
     Axes(i,1).YMinorTick = 'on'; %#okAGROW
     for j = 1:nLines
-        Lines(i,j) = animatedline(Axes(i,1),'Color',c{1,j}); %#okAGROW
+        Lines(i,j) = animatedline(Axes(i,1), ...
+            'Color',c{1,j},'LineWidth',2); %#okAGROW
     end
     title(t{i,1})
     legend(VarNames(i,:))

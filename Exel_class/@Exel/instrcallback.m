@@ -61,7 +61,7 @@ end
 obj.SamplingFcn(obj)
 
 % checking for the end
-if obj.BluetoothObj.ValuesReceived >= obj.ValuesRequired
+if height(obj.ExelData) >= obj.ValuesRequired
     disconnect(obj)
 end
 end

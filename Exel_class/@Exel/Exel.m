@@ -50,16 +50,17 @@ classdef Exel < handle
     
     properties (SetAccess = private)
         % settable using set
-        Segment
-        AutoStop = 15;
-        PacketName = 'A';
-        AccFullScale = 2;
-        GyrFullScale = 250;
-        SamplingFcn
-        SamplingFrequency = 50;
         
+        Segment
+        AutoStop
+        PacketName
+        AccFullScale
+        GyrFullScale
+        SamplingFcn
+        SamplingFrequency
         
         % only gettable prop
+        
         StartTime
         LastSampleTime
         PacketsRetrived = 0;
@@ -91,20 +92,35 @@ classdef Exel < handle
             'Q0','Q1','Q2','Q3',  ...
             'Vbat'};
         
-        % PacketInfo
-        HeaderByte
-        PacketsBuffered
-        PacketType
-        PacketHead
-        PacketComm
-        PacketSize
-        BufferSize
-        DataNumber
-        ByteGroups
-        ByteTypes
-        DataNames
-        Multiplier
-        ValuesRequired
+        % Header when a new packet is received
+        HeaderByte = hex2dec('20');
+        
+        % Packet related properties
+        PacketType % i.e.: for PacketName = 'A', PacketType = 129 (0x81)
+        PacketHead % i.e.: [HeaderByte, PacketType]
+        PacketTypeCommand % command to send to have the desired PacketType
+        
+        PacketSize = 11; % (Bytes) this is true for PacketName = 'A'
+        PacketsBuffered = 6; % packets have an interrupt
+        BufferSize % bytes to have an interrupt(PacketsBuffered*PacketSize)
+        
+        DataNumber % vars in a Packets (considering double byte vars)
+        ByteGroups % groupped bytes indexes
+        ByteTypes % i.e. {'uint8';'uint8';'uint16'; ... for each group
+        DataNames % i.e. {'PacketHeader','PacketType','ProgrNum','AccX' ...
+        Multiplier % i.e. [1;1;1;Ka;Ka;Ka;1];
+        
+        % SamplingFrequency related properties
+        % ... ancora da fare
+        
+        % AccFullScale related properties
+        % ... ancora da fare
+        
+        % GyrFullScale related properties
+        % ... ancora da fare
+        
+        % Values Required to stop acquisition
+        ValuesRequired % AutoStop * SamplingFrequency * PacketSize
         
         % bluetooth vars
         BluetoothObj
@@ -127,44 +143,37 @@ classdef Exel < handle
             
             % validating ImuName
             if ischar(ExelName)
-                obj.ExelName = ExelName;
+                obj.ExelName = lower(ExelName);
             else
                 error('ExelName must be char')
             end
+            
+            % creating obj object
+            instrlist = instrfindall; % to find already defined blueobjs 
+            instrsame = find(strcmp(instrlist(:).RemoteName, ...
+                obj.ExelName),1);
+            if isempty(instrsame)
+                obj.BluetoothObj = Bluetooth(obj.ExelName,1);
+            else
+                obj.BluetoothObj = instrlist(1,instrsame(1,1));
+            end
+            if isempty(obj.BluetoothObj.RemoteID)
+                error('Exel:invalidBluetoothRemoteName', ...
+                    'Exel sensor with RemoteName ''%s'' not found', ...
+                    obj.ExelName)
+            end
+            
+            % setting default properties
+            set(obj,'AutoStop',15)
+            set(obj,'PacketName','A')
+            set(obj,'AccFullScale',2)
+            set(obj,'GyrFullScale',250)
+            set(obj,'SamplingFrequency',50)
             
             % validating inputs
             for i = 1:2:numel(varargin)
                 % validation with set
                 set(obj,varargin{i},varargin{i+1})
-            end
-            
-            % setting Packet Properties
-            obj.HeaderByte = hex2dec('20');
-            obj.PacketsBuffered = 6;
-            switch obj.PacketName
-                case 'A'
-                    obj.PacketType = hex2dec('81');
-                    obj.PacketHead = [obj.HeaderByte, obj.PacketType];
-                    obj.PacketComm = [hex2dec('64'),hex2dec('01'), ...
-                        hex2dec('38'),hex2dec('00'),obj.PacketType];
-                    obj.PacketComm = [obj.PacketComm, ...
-                        mod(sum(obj.PacketComm),256)];
-                    
-                    obj.PacketSize = 11;
-                    obj.BufferSize = obj.PacketsBuffered * obj.PacketSize;
-                    obj.ValuesRequired = obj.AutoStop * ...
-                        obj.SamplingFrequency * obj.PacketSize;
-                    
-                    obj.DataNumber = 7;
-                    obj.ByteGroups = {0;1;[2;3];[4;5];[6;7];[8;9];10};
-                    obj.ByteTypes = {'uint8';'uint8';'uint16';'int16'; ...
-                        'int16';'int16';'uint8'};
-                    obj.DataNames = {'PacketHeader','PacketType', ...
-                        'ProgrNum','AccX','AccY','AccZ','CheckSum'};
-                    obj.Multiplier = [1;1;1;obj.Ka;obj.Ka;obj.Ka;1];
-                otherwise
-                    error([obj.PacketName, ...
-                        ' packet type still not supported.'])
             end
             
             % creating DefaultFigure if necessary
@@ -190,5 +199,6 @@ classdef Exel < handle
         instrcallback(obj,~,~)
         createInternalFigure(obj)
         updateInternalFigure(obj,~,~)
+        closeExelFigure(obj,~,~)
     end
 end

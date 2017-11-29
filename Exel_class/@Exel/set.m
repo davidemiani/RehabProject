@@ -32,7 +32,8 @@ if isprop(obj,PropertyName)
             if ischar(PropertyValue)
                 obj.Segment = PropertyValue;
             else
-                error('Segment must be char')
+                error('Exel:set:invalidSegmentPropertyValue', ...
+                    'The ''Segment'' property must be char.')
             end
             
         case 'AutoStop'
@@ -40,11 +41,42 @@ if isprop(obj,PropertyName)
             mustBeNumeric(PropertyValue)
             mustBePositive(PropertyValue)
             obj.AutoStop = PropertyValue;
+            obj.ValuesRequired = obj.AutoStop * ...
+                        obj.SamplingFrequency * obj.PacketSize;
             
         case 'PacketName'
             % validating PacketName
             mustBeMember(PropertyValue,{'A'})              % values missing
             obj.PacketName = PropertyValue;
+            switch obj.PacketName
+                case 'A'
+                    obj.PacketType = hex2dec('81');
+                    obj.PacketHead = [obj.HeaderByte, obj.PacketType];
+                    obj.PacketTypeCommand = [hex2dec('64'), ...
+                        hex2dec('01'),hex2dec('38'), ...
+                        hex2dec('00'),obj.PacketType];
+                    obj.PacketTypeCommand = [obj.PacketTypeCommand, ...
+                        mod(sum(obj.PacketTypeCommand),256)];
+                    
+                    obj.PacketSize = 11;
+                    obj.BufferSize = obj.PacketsBuffered * obj.PacketSize;
+                    obj.ValuesRequired = obj.AutoStop * ...
+                        obj.SamplingFrequency * obj.PacketSize;
+                    
+                    obj.DataNumber = 7;
+                    obj.ByteGroups = {0;1;[2;3];[4;5];[6;7];[8;9];10};
+                    obj.ByteTypes = {'uint8';'uint8';'uint16';'int16'; ...
+                        'int16';'int16';'uint8'};
+                    obj.DataNames = {'PacketHeader','PacketType', ...
+                        'ProgrNum','AccX','AccY','AccZ','CheckSum'};
+                    obj.Multiplier = [1;1;1;obj.Ka;obj.Ka;obj.Ka;1];
+                otherwise
+                    error('Exel:set:notSupportedPacketName', ...
+                        '''%s'' PacketName still not supported.', ...
+                        obj.PacketName)
+            end
+            obj.ValuesRequired = obj.AutoStop * ...
+                        obj.SamplingFrequency * obj.PacketSize;
             
         case 'AccFullScale'
             % validating AccFullScale
@@ -64,13 +96,16 @@ if isprop(obj,PropertyName)
             mustBeMember(PropertyValue, ...
                 [300,200,100,50,33.33,25,20,16.67,12.5,10,5])
             obj.SamplingFrequency = PropertyValue;
+            obj.ValuesRequired = obj.AutoStop * ...
+                        obj.SamplingFrequency * obj.PacketSize;
             
         case 'SamplingFcn'
             % validating SamplingFcn
             if isa(PropertyValue,'function_handle')
                 obj.SamplingFcn = PropertyValue;
             else
-                error('SamplingFcn must be a valid function handle')
+                error('Exel:set:invalidSamplingFcn', ...
+                    'SamplingFcn must be a valid function handle.')
             end
             
         case 'ExelFigure'
@@ -80,10 +115,12 @@ if isprop(obj,PropertyName)
             
         otherwise
             % The user is trying to set a private or hidden property
-            error(['You cannot set the property ',PropertyName])
+            error('Exel:set:cannotSetPrivateProperty', ...
+                'You cannot set the property %s.',PropertyName)
     end
 else
     % The user is trying to set a not valid property
-    error([PropertyName,' is not a valid property'])
+    error('Exel:set:invalidPropertyName', ...
+        '%s is not a valid PropertyName.',PropertyName)
 end
 end
