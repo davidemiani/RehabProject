@@ -1,6 +1,7 @@
 % Script per la valutazione della precisione del calcolo degli angoli con
 % inclinometro
 % 22/11/2017
+% Aggiunta Filtraggio dei dati
 
 clear 
 close all
@@ -47,7 +48,7 @@ angoli = {'0','10', '20','30','40','45','50','60','70','80','90',...
 %% PIANO FRONTALE
 %%
 piano = 'F';
-datiFront = strutturadati;
+datiFront = strutturaDati;
 % Carico i dati .mat
 %acquisiti con script Ferrari
 angoliFerrari = {'0', '45', '90', '135'}; 
@@ -58,6 +59,9 @@ for j = 1:nAngoli
         nomeFile = [angoliFerrari{1, j}, '_', num2str(i), piano];
         struttura = load(nomeFile);
         datiFront.(['deg' angoliFerrari{j}]) = [datiFront.(['deg' angoliFerrari{j}]); struttura.dataHum];
+        datiFrontFilt=datiFront.(['deg' angoliFerrari{j}]);
+        datiFrontFilt(:,4:6) = filterAcc(datiFrontFilt(:,4:6)',50,'off')';
+        datiFront.(['deg' angoliFerrari{j}])=datiFrontFilt;
     end
 end
 %acquisiti con mainAcquisition
@@ -67,6 +71,9 @@ for j = 1:nAngoli
     nomeFile = [angolimainAcq{1, j}, '_1', piano];
     struttura = load(nomeFile);
     datiFront.(['deg' angolimainAcq{j}]) = struttura.dataHum;
+    datiFrontFilt=datiFront.(['deg' angolimainAcq{j}]);
+    datiFrontFilt(:,4:6) = filterAcc(datiFrontFilt(:,4:6)',50,'off')';
+    datiFront.(['deg' angolimainAcq{j}])=datiFrontFilt;
 
 end
 %acquisiti da tool di Exl
@@ -80,6 +87,10 @@ for j = 1:nAngoli
     %provenienti dallo script di aquisizioni con matlab
     datitxt(:,[4 5 6]) = datitxt(:,[3 4 5]);    
     datiFront.(['deg' angolitxt{j}]) = datitxt;
+    datiFrontFilt=datiFront.(['deg' angolitxt{j}]);
+    datiFrontFilt(:,4:6) = filterAcc(datiFrontFilt(:,4:6)',50,'off')';
+    datiFront.(['deg' angolitxt{j}])=datiFrontFilt;
+
 end
 
 %% calcolo angoli 
@@ -88,7 +99,6 @@ nAngoli = length(angoli);
 for j = 1:nAngoli
     campoAngolo = ['deg' angoli{j}];
     if ismember(angoli(j),angoliFerrari) || ismember(angoli(j),angolitxt)
-        disp('is')
         datiPerAngolo = datiFront.(campoAngolo) * 2 * 9.807 / 32768;
     else
         datiPerAngolo = datiFront.(campoAngolo);
@@ -112,7 +122,7 @@ for j = 1:nAngoli
     title([angoli{j} ' gradi'])
 end
 legend(legin)
-set(h, 'Name', 'Piano Frontale')
+set(h, 'Name', 'Movimento sul Piano Frontale e osservazione Piano Frontale')
 
 % Salviamo i plot
 savefig2(h, fullfile(pwd, 'grafici', 'confrontoValutazioneAngoliFront.fig'), 'ScreenSize', false)
@@ -148,15 +158,16 @@ for i = 1:3
     grid minor
     legend(legin)
 end
-set(h2, 'Name', 'Piano Frontale')
+set(h2, 'Name', 'Movimento sul Piano Frontale e osservazione Piano Frontale')
 
 % Salviamo i plot
 savefig2(h2, fullfile(pwd, 'grafici', 'indiciValutazioniAngoliFront.fig'), 'ScreenSize', false)
 
-%% Piano sagittale
+%% PIANO SAGITTALE
+%%
 piano = 'S';
 datiSag = strutturaDati;
-%% Carico i dati 
+% Carico i dati 
 %acquisiti con script di Ferrari
 angoliFerrari = {'0', '45', '90', '135'};
 nAngoli = length(angoliFerrari);
@@ -172,6 +183,9 @@ for j = 2:nAngoli
     nomeFile = [angoliFerrari{1, j}, '_12345', piano];
     struttura = load(nomeFile);
     datiSag.(['deg' angoliFerrari{j}]) = struttura.dataHum;
+    datiSagFilt=datiSag.(['deg' angoliFerrari{j}]);
+    datiSagFilt(:,4:6) = filterAcc(datiSagFilt(:,4:6)',50,'off')';
+    datiSag.(['deg' angoliFerrari{j}])=datiSagFilt;
 end
 angoliFerrari(end)=[];
 %acquisiti con mainAcquisition
@@ -181,6 +195,9 @@ for j = 1:nAngoli
     nomeFile = [angolimainAcq{1, j}, '_1', piano];
     struttura = load(nomeFile);
     datiSag.(['deg' angolimainAcq{j}]) = struttura.dataHum;
+    datiSagFilt=datiSag.(['deg' angolimainAcq{j}]);
+    datiSagFilt(:,4:6) = filterAcc(datiSagFilt(:,4:6)',50,'off')';
+    datiSag.(['deg' angolimainAcq{j}])=datiSagFilt;
 end
 % acquisiti con tool Exl
 angolitxt = {'10', '20','30','40','50','60','70','80'};
@@ -193,47 +210,18 @@ for j = 1:nAngoli
     %provenienti dallo script di aquisizioni con matlab
     datitxt(:,[4 5 6]) = datitxt(:,[3 4 5]);    
     datiSag.(['deg' angolitxt{j}]) = datitxt;
+    datiSagFilt=datiSag.(['deg' angolitxt{j}]);
+    datiSagFilt(:,4:6) = filterAcc(datiSagFilt(:,4:6)',50,'off')';
+    datiSag.(['deg' angolitxt{j}])=datiSagFilt;
 end
 
 
-%% calcolo angoli (algoritmo nostro)
-angoliCalcolatiSag = struct(...
-    'deg0', struct('atan', [], 'acos', []), ...
-    'deg10', struct('atan', [], 'acos', []),...
-    'deg20', struct('atan', [], 'acos', []),...
-    'deg30', struct('atan', [], 'acos', []),...
-    'deg40', struct('atan', [], 'acos', []),...
-    'deg45', struct('atan', [], 'acos', []), ...
-    'deg50', struct('atan', [], 'acos', []),...
-    'deg60', struct('atan', [], 'acos', []),...
-    'deg70', struct('atan', [], 'acos', []),...    
-    'deg80', struct('atan', [], 'acos', []),...
-    'deg90', struct('atan', [], 'acos', []), ...
-    'deg100', struct('atan', [], 'acos', []),...
-    'deg120', struct('atan', [], 'acos', []), ...
-    'deg130', struct('atan', [], 'acos', []), ...
-    'deg135', struct('atan', [], 'acos', []), ...
-    'deg140', struct('atan', [], 'acos', []), ...
-    'deg150', struct('atan', [], 'acos', []), ...
-    'deg160', struct('atan', [], 'acos', []), ...
-    'deg170', struct('atan', [], 'acos', []), ...
-    'deg180', struct('atan', [], 'acos', []));
-angoli = {'0','10','20','30','40','45','50','60','70','80','90',...
-    '100','110','120','130','135','140','150','160','170','180'};
+%% calcolo angoli 
+angoliCalcolatiSag = strutturaAngoliCalcolati;
 nAngoli = length(angoli);
-% for j = 1:nAngoli
-%     campoAngolo = ['deg' angoli{j}];
-%     if j == nAngoli
-%         datiPerAngolo = datiSag.(campoAngolo); % a 135 i dati sono già a normalizzati a g
-%     else 
-%         datiPerAngolo = datiSag.(campoAngolo) * 2 * 9.807 / 32768;
-%     end
-% end
-
 for j = 1:nAngoli
     campoAngolo = ['deg' angoli{j}];
     if ismember(angoli(j),angoliFerrari) || ismember(angoli(j),angolitxt)
-        disp('is')
         datiPerAngolo = datiSag.(campoAngolo) * 2 * 9.807 / 32768;
     else
         datiPerAngolo = datiSag.(campoAngolo);
@@ -257,7 +245,7 @@ for j = 1:nAngoli
     title([angoli{j} ' gradi'])
 end
 legend(legin)
-set(h, 'Name', 'Piano Sagittale')
+set(h, 'Name', 'Movimento sul Piano Sagittale e osservazione Piano Sagittale')
 
 % Salviamo i plot
 savefig2(h, fullfile(pwd, 'grafici', 'confrontoValutazioneAngoliSag.fig'), 'ScreenSize', false)
@@ -293,7 +281,7 @@ for i = 1:3
     grid minor
     legend(legin)
 end
-set(h2, 'Name', 'Piano Sagittale')
+set(h2, 'Name', 'Movimento sul Piano Sagittale e osservazione Piano Sagittale')
 
 % Salviamo i plot
 savefig2(h2, fullfile(pwd, 'grafici', 'indiciValutazioniAngoliSag.fig'), 'ScreenSize', false)

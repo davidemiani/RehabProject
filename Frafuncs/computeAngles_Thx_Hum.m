@@ -1,4 +1,4 @@
-function [Angles] = computeAngles_DEF(Exelobj)
+function [Angles] = computeAngles_Thx_Hum(Exelobj)
 
 %In questa funzione è stato fatto uno studio sulla funzione arccos e sulla
 %funzione atan nel calcolo degli angoli dell'omero;
@@ -11,18 +11,17 @@ function [Angles] = computeAngles_DEF(Exelobj)
 % - Poichè l'arccos superato un certo angolo fornisce un errore molto
 %   elevato [50-60(circa) 90] e allo stesso tempo nel range [90-120(circa)], allora  
 %   in quel caso per il calcolo dell'angolo viene utilizzata l'atan;
-% - Nel restante dei casi l'angolo viene trovato con l'atan;
+% - Nel restante dei casi l'angolo viene trovato con l'acos;
 %
 %Per fare questo, abbiamo utilizzato una variabile come check, ovvero  
 %il rapporto tra il valore dell'accelerazione che stiamo utilizzando per il calcolo
 %dell'angolo con il metodo del Acos e la g(gravità);
 %
-% - Nel caso del piano frontale (-AccZ/g)>0.5;
-% - Nel caso del piano sagittale (-AccX/g)>0.5;
+% - Nel caso del piano frontale (-AccZ/g)>0.9659;
+% - Nel caso del piano sagittale (-AccX/g)>0.9659;
 %
-%Rimane da trovare la soglia precisa, anche se un rapporto di 0.5 significa
-%avere un angolo di 60° sul quale l'arcos  a già un errore intorno ai
-%5-10°, quindi da questo potremmo partire per lo shift;
+%Un rapporto Acc/g di 0.9659 significa avere un angolo di 75° sul quale l'arcos  a già
+%un errore intorno ai 5-10°, quindi da questo potremmo partire per lo shift;
 
 
 switch Exelobj.Segment
@@ -34,10 +33,10 @@ switch Exelobj.Segment
         Arg_S = (Exelobj.ImuData.AccX./9.807);
         Arg_F = (Exelobj.ImuData.AccZ./9.807);
         
-        ind1_AF= abs(Arg_F)>0.5;
+        ind1_AF= abs(Arg_F)>0.9659;
         ind2_AF= ~ind1_AF;
         
-        ind1_AS= abs(Arg_S)>0.5;
+        ind1_AS= abs(Arg_S)>0.9659;
         ind2_AS= ~ind1_AS;
         
         %Piano Frontale
@@ -73,5 +72,7 @@ switch Exelobj.Segment
             Exelobj.ImuData.AccX , Exelobj.ImuData.AccY)';
         Angles.Thorax.Frontal.Acos =real(...
             acosd( round(-Exelobj.ImuData.AccX/g, 1)))'-90;%-AccX -90;
+        
 end
+
 end
