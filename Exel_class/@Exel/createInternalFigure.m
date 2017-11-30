@@ -50,4 +50,7 @@ obj.ExelFigure.LastFrame = 0;
 
 % setting SamplingFcn
 obj.SamplingFcn = @obj.updateInternalFigure;
+
+% setting CloseRequestFcn
+obj.ExelFigure.Figure.CloseRequestFcn = @obj.figCloseRequestFcn;
 end

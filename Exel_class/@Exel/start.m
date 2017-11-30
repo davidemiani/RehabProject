@@ -20,6 +20,10 @@ end
 % printing
 fprintf('--- STARTING   %s ---\n',obj.ExelName)
 
+% updating ValuesRequired
+obj.ValuesRequired = obj.ValuesRequired + ...
+    obj.AutoStop * obj.SamplingFrequency;
+
 % showing ExelFigure
 obj.ExelFigure.Figure.Visible = 'on';
 

@@ -120,7 +120,7 @@ classdef Exel < handle
         % ... ancora da fare
         
         % Values Required to stop acquisition
-        ValuesRequired % AutoStop * SamplingFrequency
+        ValuesRequired = 0; % AutoStop * SamplingFrequency
         
         % bluetooth vars
         BluetoothObj

@@ -41,7 +41,6 @@ if isprop(obj,PropertyName)
             mustBeNumeric(PropertyValue)
             mustBePositive(PropertyValue)
             obj.AutoStop = PropertyValue;
-            obj.ValuesRequired = obj.AutoStop * obj.SamplingFrequency;
             
         case 'PacketName'
             % validating PacketName
@@ -91,7 +90,6 @@ if isprop(obj,PropertyName)
             mustBeMember(PropertyValue, ...
                 [300,200,100,50,33.33,25,20,16.67,12.5,10,5])
             obj.SamplingFrequency = PropertyValue;
-            obj.ValuesRequired = obj.AutoStop * obj.SamplingFrequency;
             
         case 'SamplingFcn'
             % validating SamplingFcn
