@@ -23,11 +23,6 @@ fprintf('--- STARTING   %s ---\n',obj.ExelName)
 % showing ExelFigure
 obj.ExelFigure.Figure.Visible = 'on';
 
-% updating the ValuesRequired property and flushing ExelData and ExelFigure
-obj.ValuesRequired = obj.ValuesRequired + obj.BluetoothObj.ValuesReceived;
-obj.ExelData = cell2table(cell(0,16),'VariableNames',obj.ExelVars);
-% cancellare qui tutte le animated lines con clearpoints
-
 % starting data stream
 try
     fwrite(obj.BluetoothObj,char(hex2dec('3D')))

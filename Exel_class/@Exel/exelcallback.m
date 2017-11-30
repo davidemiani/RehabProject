@@ -1,5 +1,5 @@
-function instrcallback(obj,~,~)
-% INSTRCALLBACK
+function exelcallback(obj,~,~)
+% EXELCALLBACK
 %
 % See also 
 

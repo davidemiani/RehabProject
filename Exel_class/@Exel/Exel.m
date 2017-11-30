@@ -78,7 +78,7 @@ classdef Exel < handle
         ExelFigure
     end
     
-    properties (Hidden)
+    properties (Hidden, GetAccess = private, SetAccess = private)
         % Parameters
         Ka = 2 * 9.807 / 32768;
         Kg = 250 / 32768;
@@ -120,7 +120,7 @@ classdef Exel < handle
         % ... ancora da fare
         
         % Values Required to stop acquisition
-        ValuesRequired % AutoStop * SamplingFrequency * PacketSize
+        ValuesRequired % AutoStop * SamplingFrequency
         
         % bluetooth vars
         BluetoothObj
@@ -202,9 +202,10 @@ classdef Exel < handle
     end
     
     methods (Access = private)
-        instrcallback(obj,~,~)
+        command(obj,CommandType)
+        exelcallback(obj,~,~)
         createInternalFigure(obj)
         updateInternalFigure(obj,~,~)
-        closeExelFigure(obj,~,~)
+        figCloseRequestFcn(obj,~,~)
     end
 end

@@ -41,8 +41,7 @@ if isprop(obj,PropertyName)
             mustBeNumeric(PropertyValue)
             mustBePositive(PropertyValue)
             obj.AutoStop = PropertyValue;
-            obj.ValuesRequired = obj.AutoStop * ...
-                        obj.SamplingFrequency * obj.PacketSize;
+            obj.ValuesRequired = obj.AutoStop * obj.SamplingFrequency;
             
         case 'PacketName'
             % validating PacketName
@@ -60,8 +59,6 @@ if isprop(obj,PropertyName)
                     
                     obj.PacketSize = 11;
                     obj.BufferSize = obj.PacketsBuffered * obj.PacketSize;
-                    obj.ValuesRequired = obj.AutoStop * ...
-                        obj.SamplingFrequency * obj.PacketSize;
                     
                     obj.DataNumber = 7;
                     obj.ByteGroups = {0;1;[2;3];[4;5];[6;7];[8;9];10};
@@ -75,8 +72,6 @@ if isprop(obj,PropertyName)
                         '''%s'' PacketName still not supported.', ...
                         obj.PacketName)
             end
-            obj.ValuesRequired = obj.AutoStop * ...
-                        obj.SamplingFrequency * obj.PacketSize;
             
         case 'AccFullScale'
             % validating AccFullScale
@@ -96,8 +91,7 @@ if isprop(obj,PropertyName)
             mustBeMember(PropertyValue, ...
                 [300,200,100,50,33.33,25,20,16.67,12.5,10,5])
             obj.SamplingFrequency = PropertyValue;
-            obj.ValuesRequired = obj.AutoStop * ...
-                        obj.SamplingFrequency * obj.PacketSize;
+            obj.ValuesRequired = obj.AutoStop * obj.SamplingFrequency;
             
         case 'SamplingFcn'
             % validating SamplingFcn
