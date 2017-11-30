@@ -1,16 +1,17 @@
-function TestFigure = testFigure2()
-% plot delle accelerazioni e degli angoli
+function TestFigure = testFigure2(ImuNames)
+% questa testFigure plotterà un subplot per ogni sensore con le rispettive
+% accelerazioni come animatedlines.
 
 % creating figure
 Figure = figure('Visible','off');
 
 % defining VarNames
-VarNames = {'AccX';'AccY';'AccZ';'Acos'};
+VarNames = repmat({'AccX','AccY','AccZ'},numel(ImuNames),1);
 
 % defining colors, titles and measurment unit
-c = {'r';'b';'k';'c'};
-t = VarNames;
-u = [repmat({'Acc (m\cdot s^{-2})'},numel(ImuNames),1);'Degrees (\circ)'];
+c = {'r','b','k'};
+t = ImuNames;
+u = repmat({'Acc (m\cdot s^{-2})'},numel(ImuNames),1);
 
 % defining sizes
 [nAxes,nLines] = size(VarNames);

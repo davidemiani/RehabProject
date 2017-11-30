@@ -46,10 +46,11 @@ classdef Exel < handle
     
     properties (SetAccess = public)
         UserData
+        ExelFigure
     end
     
     properties (SetAccess = private)
-        % settable using set
+        % settable using set (or defining the object)
         
         Segment
         AutoStop
@@ -75,7 +76,6 @@ classdef Exel < handle
             'MagX','MagY','MagZ', ...
             'Q0','Q1','Q2','Q3',  ...
             'Vbat'});
-        ExelFigure
     end
     
     properties (Hidden, GetAccess = private, SetAccess = private)
