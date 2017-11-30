@@ -149,15 +149,21 @@ classdef Exel < handle
             end
             
             % creating obj object
-            instrlist = instrfindall; % to find already defined blueobjs 
-            instrsame = find(strcmp(instrlist(:).RemoteName, ...
-                obj.ExelName),1);
-            if isempty(instrsame)
+            instrlist = instrfindall; % to find already defined blueobjs
+            if isempty(instrlist)
                 obj.BluetoothObj = Bluetooth(obj.ExelName,1);
             else
-                obj.BluetoothObj = instrlist(1,instrsame(1,1));
+                instrsame = find(strcmp(instrlist(:).RemoteName, ...
+                    obj.ExelName));
+                if isempty(instrsame)
+                    obj.BluetoothObj = Bluetooth(obj.ExelName,1);
+                else
+                    obj.BluetoothObj = instrlist(1,instrsame(1,1));
+                    delete(instrlist(instrsame(2:end,1)))
+                end
             end
             if isempty(obj.BluetoothObj.RemoteID)
+                delete(obj.BluetoothObj)
                 error('Exel:invalidBluetoothRemoteName', ...
                     'Exel sensor with RemoteName ''%s'' not found', ...
                     obj.ExelName)
@@ -194,7 +200,7 @@ classdef Exel < handle
         start(obj)
         stop(obj)
     end
-        
+    
     methods (Access = private)
         instrcallback(obj,~,~)
         createInternalFigure(obj)
