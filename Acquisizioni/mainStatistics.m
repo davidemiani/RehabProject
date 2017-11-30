@@ -1,7 +1,7 @@
 clc, close all
 
-csd = fileparts(mfilename('fullpath'));
-repopath = fileparts(csd);
+csd = fileparts(mfilename('fullpath')); %fornisce il percorso del main
+repopath = fileparts(csd);  %fornisce la cartella a cui appartiene il main
 
 addpath(fullfile(repopath,'frafuncs'))
 addpath(fullfile(repopath,'davefuncs'))
@@ -43,3 +43,11 @@ disp(t)
 % ora in questa table hai tutto quello che ti serve, anche i percorsi in
 % paths e puoi anche non rigenerarli mai più, ti basta ciclare e caricare
 % con le load
+
+
+
+
+
+
+
+
