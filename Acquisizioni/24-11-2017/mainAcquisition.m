@@ -3,6 +3,7 @@
 
 %% PATHS INDEXING
 %%
+clc, clearvars, close all
 csd = fileparts(mfilename('fullpath')); % current script dir
 dataPath = fullfile(csd,'data');
 
@@ -11,32 +12,15 @@ addpath(fullfile(repoPath,'davefuncs'))
 addpath(fullfile(repoPath,'Exel_class'))
 addpath(fullfile(repoPath,'frafuncs'))
 
-clc
-close all
-clearExcept csd dataPath
-
 
 %% INIT
 %%
 ExelName = 'EXLs3'; % inserire qui nome del sensore che si sta usando
-ExelFigure = InitFigure();
-%Segment = 'Homer'; % o Thorax
-%TestingTime = 120; % inserire qui il TestingTime, in secondi
 
 
 %% ACQUISITION
 %%
-% if Exel Object already created, clean up the old cleanable fields with
-% the internal reference method. In this way I am not deleting every time
-% all the object, but only a few fields, so the initialization of the
-% bluetooth connection is sensibly faster.
-if ~exist('ExelObj','var')
-    % in this case, we have to recreate the object
-    % slow procedure, but necessary
-    ExelObj = Exel(ExelName);
-    %set(ExelObj,'ExelFigure',ExelFigure)
-end
-
+ExelObj = Exel(ExelName,'AutoStop',10);
 try
     start(ExelObj)
 catch ME
@@ -67,10 +51,4 @@ uisave('dataHum','test_name')
 
 % coming back to the current script directory
 cd(csd)
-
-
-%% ENDING
-%%
-warning('on','MATLAB:structOnObject')
-clearExcept ExelObj
 
