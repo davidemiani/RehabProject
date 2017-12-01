@@ -16,8 +16,8 @@ addpath(fullfile(repopath,'Exel_class'))
 clc, close all, clearExcept csd acqpath
 
 % preallocating data structure
-angles = {'10';'40';'70';'90';'110';'130'}; nAngles = numel(angles);
-subjects = {'CM94';'FM94'}; nSubjects = numel(subjects);
+angles = {'10';'20';'40';'70';'90';'110';'130'}; nAngles = numel(angles);
+subjects = {'CM94';'FM94';'MC94';'FP94'}; nSubjects = numel(subjects);
 for k1 = 1:nSubjects
     for k2 = 1:nAngles
         data.(subjects{k1,1}).(['deg',angles{k2,1}]) = ...
@@ -29,7 +29,7 @@ end
 %% LOADING DATA
 %%
 % setting directories to analize
-directories = {'30-11-2017'}; % aggiungine altre qui, in colonna
+directories = {'30-11-2017';'01-12-2017'}; % aggiungine altre qui, in colonna
 
 % getting files and paths
 files = {};
@@ -93,7 +93,7 @@ for k1 = 1:nSubjects
         MSE2 = mean((cGold-cComp2).^2);
         
         % subplotting
-        subplot(2,3,k2), hold on, grid minor
+        subplot(2,4,k2), hold on, grid minor
         plot(cComp1,'LineWidth',1,'Color',[0,0.8,0.8]);
         plot(cComp2,'LineWidth',1,'Color',[0,0.8,0]);
         plot(cGold, 'LineWidth',3,'Color',[0,0,0.8]);
