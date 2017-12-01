@@ -1,36 +1,43 @@
-clc, close all,clear {all
+% mainStatistics
 
-csd = fileparts(mfilename('fullpath')); %fornisce il percorso del main
-repopath = fileparts(csd);  %fornisce la cartella a cui appartiene il main
 
+%% INIT
+%%
+csd = fileparts(mfilename('fullpath')); % fornisce la directory del main
+repopath = fileparts(csd); % fornisce il percorso della repo
+
+% aggiungo al path le cartelle chiave
 addpath(fullfile(repopath,'frafuncs'))
 addpath(fullfile(repopath,'davefuncs'))
 addpath(fullfile(repopath,'Exel_class'))
 
+% prealloco la struttura data
 angoli = {'10','40','70','90','110','130'};
-nAngoli = length(angoli);
+nAngoli = numel(angoli);
 for i =1:nAngoli
-    struttura.(['deg' angoli{1,i}]) = struct('F',[],'M',[],'S',[]);
+    data.(['deg' angoli{1,i}]) = struct('F',[],'M',[],'S',[]);
 end
+
 
 %% CARICAMENTO DATI
+%%
+% dichiaro le directory da analizzare
 directories = {'30-11-2017'}; % aggiungine altre qui, in colonna
 
-strutturaDati = struttura;
-for d = 1:numel(directories)
-    [cFiles,cPaths] = files2cell(fullfile(csd,directories{d,1}),'.mat');
-end
-
+% prendo nomi dei file e relativi percorsi
 files = {};
 paths = {};
 for i = 1:numel(directories)
+    % ottengo tutti i file nella cartella i-esima con files2cell
     [cFiles,cPaths] = files2cell(fullfile(csd,directories{i,1}),'.mat');
     
+    % concateno
     files = cat(1,files,cFiles);
     paths = cat(1,paths,cPaths);
     
 end
 
+% creo le altre colonne 
 angle = [];
 nTest = [];
 plane = {};
@@ -46,19 +53,21 @@ end
 t = table(files,angle,nTest,plane,sbj,paths);
 
 for i = 1:size(t,1)
-    cd(fileparts(paths{i}));    
-    load(files{i});
+    %cd(fileparts(paths{i}));
+    %load(files{i});
+    % MATLAB puÃ² fare la load anche di percorsi interi
+    load(paths{i})
     campoAngolo = ['deg' num2str(angle(i))];
     campoPiano = char(plane(i));
     sub = char(sbj(i));
     campoAcq = [sub(1:4) '_' num2str(nTest(i))];
 
-    strutturaDati.(campoAngolo).(campoPiano).(campoAcq) = dataHum;
+    data.(campoAngolo).(campoPiano).(campoAcq) = dataHum;
     
 end
    
 cd(csd)  
-%% calcolo angoli 
+%% CALCOLO ANGOLI
 %%
 angoliCalcolati = struttura;
 nAngoli = length(angoli);
@@ -68,10 +77,10 @@ for i = 1:size(t,1)
     sub = char(t.sbj(i));
     campoAcq = [sub(1:4) '_' num2str(t.nTest(i))];
     
-    if ~isempty(strutturaDati.(campoAngolo).(campoPiano).(campoAcq))
-        AccX = strutturaDati.(campoAngolo).(campoPiano).(campoAcq)(:,4);
-        AccY = strutturaDati.(campoAngolo).(campoPiano).(campoAcq)(:,5);
-        AccZ = strutturaDati.(campoAngolo).(campoPiano).(campoAcq)(:,6);
+    if ~isempty(data.(campoAngolo).(campoPiano).(campoAcq))
+        AccX = data.(campoAngolo).(campoPiano).(campoAcq)(:,4);
+        AccY = data.(campoAngolo).(campoPiano).(campoAcq)(:,5);
+        AccZ = data.(campoAngolo).(campoPiano).(campoAcq)(:,6);
         
         angoliCalcolati.(campoAngolo).(campoPiano).(campoAcq) = ...
             computeHomerAngle(AccX,AccY,AccZ);
@@ -81,8 +90,9 @@ for i = 1:size(t,1)
 end
 clearExcept csd t strutturaDati angoli struttura angoliCalcolati
 
+
 %% !!!!!!!!!!!!!!
-%% -----------------DA QUI IN POI è DA MODIFICARE--------------------
+%% -----------------DA QUI IN POI ï¿½ DA MODIFICARE--------------------
 %% !!!!!!!!!!!!!!!!
 %%
 % Plottiamo i risultati di acos e atan rispetto al valore ideale
