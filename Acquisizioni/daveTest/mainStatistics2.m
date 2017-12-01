@@ -88,9 +88,9 @@ for k1 = 1:nSubjects
         cComp2 = data.(cSbj).(cAng).comp2;
         cGold = data.(cSbj).(cAng).gold;
         
-        % computing mean error
-        cMeanError1 = num2str(mean(abs(cGold-cComp1)));
-        cMeanError2 = num2str(mean(abs(cGold-cComp2)));
+        % computing mean squared error
+        MSE1 = mean((cGold-cComp1).^2);
+        MSE2 = mean((cGold-cComp2).^2);
         
         % subplotting
         subplot(2,3,k2), hold on, grid minor
@@ -100,8 +100,8 @@ for k1 = 1:nSubjects
         title(cAng)
         xlabel('Samples (adim)')
         ylabel('Degrees (\circ)')
-        legend(sprintf('Metodo Sagittale (ERR = %s)',cMeanError1), ...
-            sprintf('Metodo Proiezione (ERR = %s)',cMeanError2), ...
+        legend(sprintf('Metodo Sagittale (MSE = %s)',num2str(MSE1)), ...
+            sprintf('Metodo Proiezione (MSE = %s)',num2str(MSE2)), ...
             'Location','southoutside')
     end
     
