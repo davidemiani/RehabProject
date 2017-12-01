@@ -15,7 +15,7 @@ addpath(fullfile(repoPath,'frafuncs'))
 
 %% INIT
 %%
-ExelName = 'EXLs3'; % inserire qui nome del sensore che si sta usando
+ExelName = 'EXLs3_0067'; % inserire qui nome del sensore che si sta usando
 
 
 %% ACQUISITION
