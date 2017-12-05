@@ -3,8 +3,6 @@
 
 %% INIT
 %%
-pulisci
-
 % getting current script directory
 csd = fileparts(mfilename('fullpath'));
 
@@ -13,23 +11,28 @@ repopath = fileparts(csd);
 
 % computing data dir
 datapath = fullfile(repopath,'Acquisizioni', ...
-    char(datetime('now','Format','dd-MM-yyyy')));
+    char(datetime('now','Format','yyyy-MM-dd')));
 
 % assuring you have the right function paths
 addpath(fullfile(repopath,'Exel_class'))
-addpath(fullfile(repopath,'frafuncs'))
 addpath(fullfile(repopath,'davefuncs'))
+addpath(fullfile(csd,'davetest'))
+
+
+% clearing old vars
+clc, close all, clearExcept csd datapath
 
 % checking if the datapath is existent. If it doesn't, touch will create it
 touch(datapath);
 
 % setting ExelName and Fig
-ExelName = 'EXLs3_0067';
+ExelName = 'EXLs3';
+TestDuration = 30;
 ExelFigure = testFigure1();
 
 % creating the object
 obj = Exel(ExelName,'ExelFigure',ExelFigure,'SamplingFcn',@testFunc);
-set(obj,'AutoStop',10)
+set(obj,'AutoStop',TestDuration)
 
 % starting it, if error, exiting
 try
@@ -63,3 +66,7 @@ uisave('dataHum','test_name')
 % coming back to the current script directory
 cd(csd)
 
+% if no file was saved
+if isempty(files2cell(datapath))
+    rmdir(datapath)
+end

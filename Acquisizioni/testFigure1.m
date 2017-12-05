@@ -2,11 +2,11 @@ function ExelFigure = testFigure1()
 % plot delle accelerazioni e degli angoli
 
 % creating figure
-Figure = figure('Visible','off');
+Figure = figure('Visible','off','Position',get(0,'ScreenSize'));
 
 % defining VarNames
 VarNames = {'AccX','AccY','AccZ'; ...
-    'Angle','empty','empty'};
+    'AngleSagittMethod','AngleGravityMethod','empty'};
 
 % defining sizes
 [nAxes,nLines] = size(VarNames);
