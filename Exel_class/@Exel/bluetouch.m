@@ -13,16 +13,16 @@ for i = 1:m
         % getting instruments already created with the same ExelName
         instrfound = instrfind('RemoteName',obj(i,j).ExelName);
         
-        % updating channel
-        channel = channel + 1;
-        
         % if not already creating, we have to create it
         if isempty(instrfound)
+            % updating channel
+            channel = channel + 1;
+            
             obj(i,j).BluetoothObj = Bluetooth( ...
                 obj(i,j).ExelName,channel);
         else
             obj(i,j).BluetoothObj = instrfound;
-            obj(i,j).BluetoothObj.Channel = channel;
+            %obj(i,j).BluetoothObj.Channel = channel;
         end
         
         % checking existence
