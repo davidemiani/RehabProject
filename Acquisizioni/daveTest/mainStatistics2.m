@@ -16,8 +16,8 @@ addpath(fullfile(repopath,'Exel_class'))
 clc, close all, clearExcept csd acqpath
 
 % preallocating data structure
-angles = {'10';'20';'40';'70';'90';'110';'130'}; nAngles = numel(angles);
-subjects = {'CM94';'FM94';'MC94';'FP94'}; nSubjects = numel(subjects);
+angles = {'20';'30';'40';'50';'60';'70';'90';'120'}; nAngles = numel(angles);
+subjects = {'CM94';'FM94';'MC94';'FP94';'GL94';'DM94'}; nSubjects = numel(subjects);
 for k1 = 1:nSubjects
     for k2 = 1:nAngles
         data.(subjects{k1,1}).(['deg',angles{k2,1}]) = ...
@@ -29,7 +29,7 @@ end
 %% LOADING DATA
 %%
 % setting directories to analize
-directories = {'30-11-2017';'01-12-2017'}; % aggiungine altre qui, in colonna
+directories = {'2017-12-05'}; % aggiungine altre qui, in colonna
 
 % getting files and paths
 files = {};

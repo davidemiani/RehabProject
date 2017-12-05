@@ -12,17 +12,17 @@ addpath(fullfile(repopath,'davefuncs'))
 addpath(fullfile(repopath,'Exel_class'))
 
 % prealloco la struttura data
-angoli = {'10','40','70','90','110','130'};
+angoli = {'20','30','40','50','60','70','90','120'};
 nAngoli = numel(angoli);
 for i =1:nAngoli
-    data.(['deg' angoli{1,i}]) = struct('F',[],'M',[],'S',[]);
+    data.(['deg' angoli{1,i}]) = struct('N',[],'E',[],'I',[]);
 end
 
 
 %% CARICAMENTO DATI
 %%
 % dichiaro le directory da analizzare
-directories = {'30-11-2017'}; % aggiungine altre qui, in colonna
+directories = {'2017-12-05'}; % aggiungine altre qui, in colonna
 
 % prendo nomi dei file e relativi percorsi
 files = {};
