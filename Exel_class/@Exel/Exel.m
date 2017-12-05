@@ -78,7 +78,7 @@ classdef Exel < handle
             'Vbat'});
     end
     
-    properties (Hidden, GetAccess = private, SetAccess = private)
+    properties (Hidden, SetAccess = private)%, GetAccess = private)
         % Parameters
         Ka = 2 * 9.807 / 32768;
         Kg = 250 / 32768;
@@ -141,50 +141,45 @@ classdef Exel < handle
             %
             %    See also CONNECT, DISCONNECT, START, STOP
             
-            % validating ImuName
-            if ischar(ExelName)
-                obj.ExelName = lower(ExelName);
-            else
-                error('ExelName must be char')
-            end
-            
-            % creating obj object
-            instrlist = instrfindall; % to find already defined blueobjs
-            if isempty(instrlist)
-                obj.BluetoothObj = Bluetooth(obj.ExelName,1);
-            else
-                instrsame = find(strcmp(instrlist(:).RemoteName, ...
-                    obj.ExelName));
-                if isempty(instrsame)
-                    obj.BluetoothObj = Bluetooth(obj.ExelName,1);
+            % if nargin==0 preallocating, if not:
+            if nargin~=0
+                % validating ExelName
+                if ischar(ExelName) ...
+                        || isstring(ExelName) || iscellstr(ExelName)
+                    ExelName = lower(string(ExelName));
+                    [m,n] = size(ExelName);
+                    obj(m,n) = Exel();
+                    for i = 1:m
+                        for j = 1:n
+                            obj(i,j).ExelName = ExelName{i,j};
+                        end
+                    end
                 else
-                    obj.BluetoothObj = instrlist(1,instrsame(1,1));
-                    delete(instrlist(instrsame(2:end,1)))
+                    error('Exel:invalidExelNameDataType', ...
+                        ['ExelName must be char, string ', ...
+                        'or a cell array of char'])
                 end
-            end
-            if isempty(obj.BluetoothObj.RemoteID)
-                delete(obj.BluetoothObj)
-                error('Exel:invalidBluetoothRemoteName', ...
-                    'Exel sensor with RemoteName ''%s'' not found', ...
-                    obj.ExelName)
-            end
-            
-            % setting default properties
-            set(obj,'AutoStop',15)
-            set(obj,'PacketName','A')
-            set(obj,'AccFullScale',2)
-            set(obj,'GyrFullScale',250)
-            set(obj,'SamplingFrequency',50)
-            
-            % validating inputs
-            for i = 1:2:numel(varargin)
-                % validation with set
-                set(obj,varargin{i},varargin{i+1})
-            end
-            
-            % creating DefaultFigure if necessary
-            if strcmp(obj.ExelFigureMode,'Default')
-                createInternalFigure(obj)
+                
+                % creating/getting BluetoothObj
+                bluetouch(obj)
+                
+                % setting default properties
+                set(obj,'AutoStop',15)
+                set(obj,'PacketName','A')
+                set(obj,'AccFullScale',2)
+                set(obj,'GyrFullScale',250)
+                set(obj,'SamplingFrequency',50)
+                
+                % validating inputs
+                for i = 1:2:numel(varargin)
+                    % validation with set
+                    set(obj,varargin{i},varargin{i+1})
+                end
+                
+                % creating DefaultFigure if necessary
+                if strcmp(obj(1,1).ExelFigureMode,'Default')
+                    arrayfun(@createInternalFigure,obj)
+                end
             end
         end
     end
@@ -202,6 +197,7 @@ classdef Exel < handle
     end
     
     methods (Access = private)
+        bluetouch(obj)
         command(obj,CommandType)
         exelcallback(obj,~,~)
         createInternalFigure(obj)

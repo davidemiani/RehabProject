@@ -13,7 +13,7 @@ function start(obj)
 %     See also Exel, Exel/connect, Exel/disconnect, Exel/stop
 
 % checking if communication is opened
-if isempty(obj.BluetoothObj) || strcmp(obj.ConnectionStatus,'closed')
+if strcmp(obj.ConnectionStatus,'closed')
     connect(obj)
 end
 

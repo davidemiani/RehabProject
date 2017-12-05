@@ -12,6 +12,12 @@ function connect(obj)
 %
 %     See also Exel, Exel/disconnect, Exel/start, Exel/stop
 
+% checking for multidimensional array
+if numel(obj)>1
+    arrayfun(@connect,obj)
+    return
+end
+
 % printing
 fprintf('--- CONNECTING    %s ---\n',obj.ExelName)
 

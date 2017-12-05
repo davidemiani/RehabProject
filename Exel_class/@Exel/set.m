@@ -13,12 +13,13 @@ function set(obj,PropertyName,PropertyValue)
 %
 %     See also Exel, Exel/get
 
-% call builtin set if OBJ isn't an Exel object.
-if ~isa(obj,'Exel')
-    try
-	    builtin('set', obj, PropertyName, PropertyValue);
-    catch ME
-        rethrow(ME);
+% checking for multidimensional inputs
+if numel(obj)>1
+    [m,n] = size(obj);
+    for i = 1:m
+        for j = 1:n
+            set(obj(i,j),PropertyName,PropertyValue)
+        end
     end
     return
 end

@@ -13,6 +13,12 @@ function disconnect(obj)
 %
 %     See also Exel, Exel/connect, Exel/start, Exel/stop
 
+% checking for multidimensional array
+if numel(obj)>1
+    arrayfun(@disconnect,obj)
+    return
+end
+
 % stop acquisition if necessary
 if strcmp(obj.AcquisitionStatus,'on')
     stop(obj)
