@@ -15,5 +15,15 @@ function PropertyValue = get(obj,PropertyName)
 %
 %     See also Exel, Exel/set
 
-PropertyValue = obj.(PropertyName);
+if numel(obj)>1
+    [m,n] = size(obj);
+    PropertyValue = cell(m,n);
+    for i = 1:m
+        for j = 1:n
+            PropertyValue{i,j} = obj(i,j).(PropertyName);
+        end
+    end
+else
+    PropertyValue = obj.(PropertyName);
+end
 end
