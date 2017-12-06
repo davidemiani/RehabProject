@@ -18,7 +18,6 @@ addpath(fullfile(repopath,'Exel_class'))
 addpath(fullfile(repopath,'davefuncs'))
 addpath(fullfile(csd,'davetest'))
 
-
 % clearing old vars
 clc, close all, clearExcept csd datapath
 
@@ -26,8 +25,8 @@ clc, close all, clearExcept csd datapath
 touch(datapath);
 
 % setting ExelName and Fig
-ExelName = 'EXLs3';
-TestDuration = 30;
+ExelName = 'EXLs3_0070';
+TestDuration = 10;
 ExelFigure = testFigure1();
 
 % creating the object
