@@ -18,6 +18,11 @@ if numel(obj)>1
     return
 end
 
+% quitting if not connected
+if strcmp(obj.ConnectionStatus,'open')
+    return
+end
+
 % printing
 fprintf('--- CONNECTING    %s ---\n',obj.ExelName)
 

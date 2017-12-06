@@ -12,6 +12,12 @@ function start(obj)
 %
 %     See also Exel, Exel/connect, Exel/disconnect, Exel/stop
 
+% checking for multidimensional array
+if numel(obj)>1
+    arrayfun(@start,obj)
+    return
+end
+
 % checking if communication is opened
 if strcmp(obj.ConnectionStatus,'closed')
     connect(obj)
