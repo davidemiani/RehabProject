@@ -19,6 +19,11 @@ if numel(obj)>1
     return
 end
 
+% quitting if not connected
+if strcmp(obj.ConnectionStatus,'closed')
+    return
+end
+
 % stop acquisition if necessary
 if strcmp(obj.AcquisitionStatus,'on')
     stop(obj)

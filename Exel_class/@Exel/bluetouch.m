@@ -1,8 +1,8 @@
 function bluetouch(obj)
-persistent channel
-if isempty(channel)
-    channel = 0;
-end
+% persistent channel
+% if isempty(channel)
+%     channel = 0;
+% end
 
 % getting Exel object dimensions
 [m,n] = size(obj);
@@ -13,13 +13,13 @@ for i = 1:m
         % getting instruments already created with the same ExelName
         instrfound = instrfind('RemoteName',obj(i,j).ExelName);
         
+%         % updating channel
+%         channel = channel + 1;
+        
         % if not already creating, we have to create it
         if isempty(instrfound)
-            % updating channel
-            channel = channel + 1;
-            
             obj(i,j).BluetoothObj = Bluetooth( ...
-                obj(i,j).ExelName,channel);
+                obj(i,j).ExelName,1);
         else
             obj(i,j).BluetoothObj = instrfound;
             %obj(i,j).BluetoothObj.Channel = channel;

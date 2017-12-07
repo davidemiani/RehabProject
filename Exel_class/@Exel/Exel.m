@@ -171,9 +171,13 @@ classdef Exel < handle
                 set(obj,'SamplingFrequency',50)
                 
                 % validating inputs
+                if mod(numel(varargin),2)==0
                 for i = 1:2:numel(varargin)
-                    % validation with set
                     set(obj,varargin{i},varargin{i+1})
+                end
+                else
+                    error('Exel:notPairedInputArguments', ...
+                        'Input arguments must be paired.')
                 end
                 
                 % creating DefaultFigure if necessary
