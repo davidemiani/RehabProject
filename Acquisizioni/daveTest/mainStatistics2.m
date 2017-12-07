@@ -17,7 +17,7 @@ clc, close all, clearExcept csd acqpath
 
 % preallocating data structure
 angles = {'20';'30';'40';'50';'60';'70';'90';'120'}; nAngles = numel(angles);
-subjects = {'CM94';'FM94';'MC94';'FP94';'GL94';'DM94'}; nSubjects = numel(subjects);
+subjects = {'CM94';'FM94';'FP94';'GL94'}; nSubjects = numel(subjects); % missing MC94 & DM94
 rotations = {'E'; 'I'; 'N'}; nRotations = numel(rotations);
 for k1 = 1:nSubjects
     for k2 = 1:nAngles
@@ -117,8 +117,8 @@ for k1 = 1:nSubjects
     end
     
     % saving results
-    savefig2(h,fullfile(csd,'fig',[cSbj,'.fig']),'ScreenSize',false)
-    savefig2(h,fullfile(csd,'jpg',[cSbj,'.jpg']),'ScreenSize', true)
+    savefig2(h,fullfile(csd,'figSensor0070',[cSbj,'.fig']),'ScreenSize',false)
+    savefig2(h,fullfile(csd,'jpgSensor0070',[cSbj,'.jpg']),'ScreenSize', true)
 end
 
 %% COMPUTING STATISTICS
@@ -182,11 +182,12 @@ for r = 1:nRotations
     end
     
     % plotto
-    plot(anglesd, erroreTotaleSagEval, ...
-        'o-',anglesd, erroreTotaleSphEval, ...
-        'o-',anglesd,zeros(size(anglesd)))
+    plot(anglesd, erroreTotaleSagEval, 'o--', ... 
+        anglesd, erroreTotaleSphEval, 'o-', ...
+        anglesd,zeros(size(anglesd)))
     grid minor
     legend('Metodo Sagittale', 'Metodo Proiezione')
     title(['Errore totale per ogni angolo per la rotazione ', rotations{r}])
 end
-savefig2(h,fullfile(csd,'jpg',[cSbj,'.jpg']),'ScreenSize', false)
+savefig2(h,fullfile(csd,'jpgSensor0070',[get(gcf, 'Name'),'.jpg']),'ScreenSize', false)
+savefig2(h,fullfile(csd,'figSensor0070',[get(gcf, 'Name'),'.fig']),'ScreenSize', false)
