@@ -117,8 +117,8 @@ for k1 = 1:nSubjects
     end
     
     % saving results
-    savefig2(h,fullfile(csd,'figSensor0070',[cSbj,'.fig']),'ScreenSize',false)
-    savefig2(h,fullfile(csd,'jpgSensor0070',[cSbj,'.jpg']),'ScreenSize', true)
+    savefig2(h,fullfile(csd,'figSensor0070Abs',[cSbj,'.fig']),'ScreenSize',false)
+    savefig2(h,fullfile(csd,'jpgSensor0070Abs',[cSbj,'.jpg']),'ScreenSize', true)
 end
 
 %% COMPUTING STATISTICS
@@ -142,8 +142,8 @@ for a = 1:nAngles
             currentSphericalEval = currentAngles.comp2;
             
             % valutare l'errore medio sul soggetto per entrambe le valutazioni
-            errorCurrSagEval = mean(currentSagittalEval) - goldd;
-            errorCurrSphEval = mean(currentSphericalEval) - goldd;
+            errorCurrSagEval = abs(mean(currentSagittalEval) - goldd);
+            errorCurrSphEval = abs(mean(currentSphericalEval) - goldd);
             
             % alloco l'errore nella struttura
             errore.(rotations{r,1}).(['deg', angles{a,1}]).(metodi{1}).(subjects{s,1}) = ...
@@ -186,8 +186,10 @@ for r = 1:nRotations
         anglesd, erroreTotaleSphEval, 'o-', ...
         anglesd,zeros(size(anglesd)))
     grid minor
+    ylabel('gradi (°)')
+    xlabel('gradi (°)')
     legend('Metodo Sagittale', 'Metodo Proiezione')
     title(['Errore totale per ogni angolo per la rotazione ', rotations{r}])
 end
-savefig2(h,fullfile(csd,'jpgSensor0070',[get(gcf, 'Name'),'.jpg']),'ScreenSize', false)
-savefig2(h,fullfile(csd,'figSensor0070',[get(gcf, 'Name'),'.fig']),'ScreenSize', false)
+savefig2(h,fullfile(csd,'jpgSensor0070Abs',[get(gcf, 'Name'),'.jpg']),'ScreenSize', false)
+savefig2(h,fullfile(csd,'figSensor0070Abs',[get(gcf, 'Name'),'.fig']),'ScreenSize', false)
