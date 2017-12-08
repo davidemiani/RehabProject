@@ -127,8 +127,8 @@ for k1 = 1:nSubjects
     end
     
     % saving results
-    savefig2(h,fullfile(csd,'figSensor0070Abs',[cSbj,'.fig']),'ScreenSize',false)
-    savefig2(h,fullfile(csd,'jpgSensor0070Abs',[cSbj,'.jpg']),'ScreenSize', true)
+    savefig2(h,fullfile(csd,'figSensor0070Abs_addedTrig3',[cSbj,'.fig']),'ScreenSize',false)
+    savefig2(h,fullfile(csd,'jpgSensor0070Abs_addedTrig3',[cSbj,'.jpg']),'ScreenSize', true)
 end
 
 %% COMPUTING STATISTICS
@@ -214,5 +214,5 @@ for r = 1:nRotations
     legend('Metodo Trigonometrico 1', 'Metodo Proiezione', 'Metodo Trigonometrico 2')
     title(['Errore totale per ogni angolo per la rotazione ', rotations{r}])
 end
-savefig2(h,fullfile(csd,'jpgSensor0070Abs',[get(gcf, 'Name'),'.jpg']),'ScreenSize', false)
-savefig2(h,fullfile(csd,'figSensor0070Abs',[get(gcf, 'Name'),'.fig']),'ScreenSize', false)
+savefig2(h,fullfile(csd,'jpgSensor0070Abs_addedTrig3',[get(gcf, 'Name'),'.jpg']),'ScreenSize', false)
+savefig2(h,fullfile(csd,'figSensor0070Abs_addedTrig3',[get(gcf, 'Name'),'.fig']),'ScreenSize', false)
