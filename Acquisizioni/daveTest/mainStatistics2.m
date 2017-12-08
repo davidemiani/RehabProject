@@ -58,9 +58,11 @@ for i = 1:numel(files)
     if isempty(dataHum) % se è vuoto ciaone
         angles1 = [];
         angles2 = [];
+        angles3 = [];
     else % altrimenti calcolo gli angoli
         angles1 = computeHomerAngle1(dataHum(:,4:6));
         angles2 = computeHomerAngle2(dataHum(:,4:6));
+        angles3 = computeHomerAngle3(dataHum(:,4:6))'; % trasposizione: computeHomerAngle3 esce una riga e non una colonna
     end
     
     % popolo la struttura
@@ -72,6 +74,9 @@ for i = 1:numel(files)
     
     data.(cSbj).(cAngStr).(cRot).comp2 = ...
         angles2;
+    
+    data.(cSbj).(cAngStr).(cRot).comp3 = ...
+        angles3;
 end
 
 
@@ -92,27 +97,32 @@ for k1 = 1:nSubjects
         % getting current data
         cComp1 = [];
         cComp2 = [];
+        cComp3 = [];
         cGold = [];
         for r = 1:nRotations
             cComp1 = [cComp1; data.(cSbj).(cAng).(rotations{r}).comp1];
             cComp2 = [cComp2; data.(cSbj).(cAng).(rotations{r}).comp2];
+            cComp3 = [cComp3; data.(cSbj).(cAng).(rotations{r}).comp3];
             cGold = [cGold; data.(cSbj).(cAng).(rotations{r}).gold];
         end
 
         % computing mean squared error
         MSE1 = mean((cGold-cComp1).^2);
         MSE2 = mean((cGold-cComp2).^2);
+        MSE3 = mean((cGold-cComp3).^2);
         
         % subplotting
         subplot(2,4,k2), hold on, grid minor
         plot(cComp1,'LineWidth',1,'Color',[0,0.8,0.8]);
         plot(cComp2,'LineWidth',1,'Color',[0,0.8,0]);
+        plot(cComp3,'LineWidth',1,'Color',[0.8,0.8,0])
         plot(cGold, 'LineWidth',3,'Color',[0,0,0.8]);
         title([cAng, '; ', 'Rotazione: Extra, Intra, Normale'])
         xlabel('Samples (adim)')
         ylabel('Degrees (\circ)')
-        legend(sprintf('Metodo Sagittale (MSE = %s)',num2str(MSE1)), ...
+        legend(sprintf('Metodo Trigonometrico 1 (MSE = %s)',num2str(MSE1)), ...
             sprintf('Metodo Proiezione (MSE = %s)',num2str(MSE2)), ...
+            sprintf('Metodo Trigonometrico 2 (MSE = %s)',num2str(MSE2)), ...
             'Location','southoutside')
     end
     
@@ -122,8 +132,10 @@ for k1 = 1:nSubjects
 end
 
 %% COMPUTING STATISTICS
+%%
+
 % metodi di valutazione
-metodi = {'SagEval', 'SphEval'};
+metodi = {'TrigEval1', 'SphEval', 'TrigEval2'};
 % definisco gli angoli in double
 anglesd = NaN(nAngles, 1);
 % definisco la struttura errore
@@ -138,18 +150,22 @@ for a = 1:nAngles
             currentAngles = data.(subjects{s, 1}).(['deg', angles{a, 1}]).(rotations{r});
             
             % divido le due valutazioni considerando la rotazione corrente
-            currentSagittalEval = currentAngles.comp1;
+            currentTrigEval1 = currentAngles.comp1;
             currentSphericalEval = currentAngles.comp2;
+            currentTrigEval2 = currentAngles.comp3;
             
             % valutare l'errore medio sul soggetto per entrambe le valutazioni
-            errorCurrSagEval = abs(mean(currentSagittalEval) - goldd);
+            errorCurrTrigEval1 = abs(mean(currentTrigEval1) - goldd);
             errorCurrSphEval = abs(mean(currentSphericalEval) - goldd);
+            errorCurrTrigEval2 = abs(mean(currentTrigEval2) - goldd);
             
             % alloco l'errore nella struttura
             errore.(rotations{r,1}).(['deg', angles{a,1}]).(metodi{1}).(subjects{s,1}) = ...
-                errorCurrSagEval;
+                errorCurrTrigEval1;
             errore.(rotations{r,1}).(['deg', angles{a,1}]).(metodi{2}).(subjects{s,1}) = ...
                 errorCurrSphEval;
+            errore.(rotations{r,1}).(['deg', angles{a,1}]).(metodi{3}).(subjects{s,1}) = ...
+                errorCurrTrigEval2;
         end
         % valuto l'errore medio totale su tutti i soggetti
         errore.(rotations{r,1}).(['deg', angles{a,1}]).(metodi{1}).('totale') = ...
@@ -159,6 +175,10 @@ for a = 1:nAngles
         errore.(rotations{r,1}).(['deg', angles{a,1}]).(metodi{2}).('totale') = ...
             mean(cell2mat(struct2cell(...
             errore.(rotations{r,1}).(['deg', angles{a,1}]).(metodi{2})...
+            )));
+        errore.(rotations{r,1}).(['deg', angles{a,1}]).(metodi{3}).('totale') = ...
+            mean(cell2mat(struct2cell(...
+            errore.(rotations{r,1}).(['deg', angles{a,1}]).(metodi{3})...
             )));
     end
 end
@@ -174,21 +194,24 @@ for r = 1:nRotations
     subplot(1,nSubplots,r)
     
     % valuto il vettore dell'errore totale su entrambi i metodi
-    erroreTotaleSagEval = NaN(nAngles, 1);
+    erroreTotaleTrigEval1 = NaN(nAngles, 1);
     erroreTotaleSphEval = NaN(nAngles, 1);
+    erroreTotaleTrigEval2 = NaN(nAngles, 1);
     for a = 1:nAngles
-        erroreTotaleSagEval(a) = errore.(rotations{r}).(['deg' angles{a}]).(metodi{1}).totale;
+        erroreTotaleTrigEval1(a) = errore.(rotations{r}).(['deg' angles{a}]).(metodi{1}).totale;
         erroreTotaleSphEval(a) = errore.(rotations{r}).(['deg' angles{a}]).(metodi{2}).totale;
+        erroreTotaleTrigEval2(a) = errore.(rotations{r}).(['deg' angles{a}]).(metodi{3}).totale;
     end
     
     % plotto
-    plot(anglesd, erroreTotaleSagEval, 'o--', ... 
+    plot(anglesd, erroreTotaleTrigEval1, 'o--', ... 
         anglesd, erroreTotaleSphEval, 'o-', ...
+        anglesd, erroreTotaleTrigEval2, 'ko-.', ...
         anglesd,zeros(size(anglesd)))
     grid minor
     ylabel('gradi (°)')
     xlabel('gradi (°)')
-    legend('Metodo Sagittale', 'Metodo Proiezione')
+    legend('Metodo Trigonometrico 1', 'Metodo Proiezione', 'Metodo Trigonometrico 2')
     title(['Errore totale per ogni angolo per la rotazione ', rotations{r}])
 end
 savefig2(h,fullfile(csd,'jpgSensor0070Abs',[get(gcf, 'Name'),'.jpg']),'ScreenSize', false)

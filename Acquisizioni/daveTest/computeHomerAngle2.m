@@ -1,3 +1,4 @@
+% metodo Yang
 function angle = computeHomerAngle2(varargin)
 if nargin == 1
     A = varargin{1};
