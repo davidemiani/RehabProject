@@ -1,6 +1,6 @@
 function port = getBluetoothPort(FriendlyName)
 %GETBLUETOOTHPORT Get serial port for a Bluetooth device.
-%   PORT = GETBLUETOOTHPORT('FRIENDLYNAME') returns the serial port
+%   PORT = GETBLUETOOTHPORT(FRIENDLYNAME) returns the serial port
 %   associated with a device with a specified FRIENDLYNAME.
 %
 %   You can use this PORT result to construct a serial port object with the
@@ -21,26 +21,25 @@ function port = getBluetoothPort(FriendlyName)
 %   ------------------------------------
 if ispc
     % quering for bluetooth devices written in registry
-    [~,Reg] = dosRegQuery( ...
-        'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Enum\BTHENUM','/s');
+    [~,REG] = dosRegQuery('BTHENUM','/s');
     
     % getting device Key and ContainerID from Friendly Name
-    DevKey = Reg.Key(Reg.FriendlyName == FriendlyName);
+    DevKey = REG.Key(REG.FriendlyName == FriendlyName);
     if isempty(DevKey)
         error('getCOM:unknownDevice', ...
             'Device with FriendlyName %s not present in the registry.', ...
             FriendlyName)
     end
-    DevContainer = Reg.ContainerID(Reg.FriendlyName == FriendlyName);
+    DevContainer = REG.ContainerID(REG.FriendlyName == FriendlyName);
     
     % looking for the device with the same container
-    SameContainerKeys = Reg.Key(Reg.ContainerID == DevContainer);
+    SameContainerKeys = REG.Key(REG.ContainerID == DevContainer);
     OtherDevWithSameContainerKey = setdiff(SameContainerKeys,DevKey);
     DevParametersKey = string(fullfile( ...
         OtherDevWithSameContainerKey{1,1},'Device Parameters'));
     
     % getting COM port
-    port = Reg.PortName(Reg.Key == DevParametersKey);
+    port = REG.PortName(REG.Key == DevParametersKey);
     port = port{1,1};
 elseif ismac
     error('getBluetoothPort:unsupportedMachine', ...

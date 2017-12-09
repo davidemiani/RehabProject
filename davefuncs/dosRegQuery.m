@@ -23,7 +23,6 @@ function [status,result] = dosRegQuery(KEY,varargin)
 %       % quering the registry for Bluetooth devices PortName values:
 %         [status,result] = dosRegQuery('BTHENUM','/s','/v','PortName');
 %
-%
 %       % quering the registry only for Bluetooth devices with a certain
 %       % PortName value:
 %         [status,result] = dosRegQuery('BTHENUM','/s','/f','COM3');
@@ -71,40 +70,66 @@ end
 
 % outputting
 if status == 0
-    % cleaning up dos query result
+    % splitting in cells and cleaning up dos query result
     result = strsplit(result,newline)';
-    result = result(2:end-1);
+    result = result(2:end-1); % removing empty cells
     
+    % finding key indexes
     KeyIndexes = [find(cellfun(@issubkey,result, ...
         repmat({KEY},size(result))));numel(result)+1];
     
+    % REG struct init
+    REG = struct();
+    
+    % cycling on found keys
     for i = 1:numel(KeyIndexes)-1
-        Reg(i,1).Key = result{KeyIndexes(i,1),1}; %#okAGROW
+        % setting a new key in REG struct for each new row
+        REG(i,1).Key = result{KeyIndexes(i,1),1};
         
+        % getting values (cells between 2 keys)
         cCell = result(KeyIndexes(i,1)+1:KeyIndexes(i+1,1)-1);
+        
+        % if the new key has available values
         if not(isempty(cCell))
+            % splitting cols
             cCell = cellfun(@strsplit,cCell, ...
                 repmat({'    '},size(cCell)),'UniformOutput',false);
-            cCell = [cCell{:}]';
+            cCell = [cCell{:}]'; % making cCell an Nx1 cell array
             
+            % extracting new values
             Name = cCell(2:4:end,1);
             Data = cCell(4:4:end,1);
+            
+            % setting new values in REG struct
             for ii = 1:numel(Name)
-                Reg(i,1).(Name{ii,1}) = Data{ii,1};
+                REG(i,1).(Name{ii,1}) = Data{ii,1};
             end
         end
     end
-    varNames = fieldnames(Reg)';
-    Reg = struct2cell(Reg)'; Reg(cellfun(@isempty,Reg)) = {''};
-    Reg = string(Reg);
-    result = array2table(Reg,'VariableNames',varNames);
+    
+    % getting all value names found
+    varNames = fieldnames(REG)';
+    
+    % verting to cell
+    REG = struct2cell(REG)';
+    
+    % forcing empty cells to contain an empty char
+    REG(cellfun(@isempty,REG)) = {''};
+    
+    % verting to string
+    REG = string(REG);
+    
+    % finally, verting to table of strings and outputting result
+    result = array2table(REG,'VariableNames',varNames);
 else
-    % checking for 0 elements found
+    % checking if an error occurred
     if length(result)>6 && strcmp(result(2:6),'Error')
+        % throwing the corrispondent error (result is a char)
         error('dosRegQuery:queryError',result)
     else
+        % in this case no element found, outputting an empty table
         status = 0;
-        result = {};
+        result = table();
     end
 end
 end
