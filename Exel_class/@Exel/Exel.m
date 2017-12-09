@@ -40,7 +40,7 @@ classdef Exel < handle
     %
     % ------------------------------------
     % CREDITS:     Davide Miani (nov 2017)
-    % LAST REVIEW: Davide Miani (nov 2017)
+    % LAST REVIEW: Davide Miani (dec 2017)
     % MAIL TO:     davide.miani2@gmail.com
     % ------------------------------------
     
@@ -144,20 +144,14 @@ classdef Exel < handle
             % if nargin==0 preallocating, if not:
             if nargin~=0
                 % validating ExelName
-                if ischar(ExelName) ...
-                        || isstring(ExelName) || iscellstr(ExelName)
-                    ExelName = lower(string(ExelName));
-                    [m,n] = size(ExelName);
-                    obj(m,n) = Exel();
-                    for i = 1:m
-                        for j = 1:n
-                            obj(i,j).ExelName = ExelName{i,j};
-                        end
+                mustBeCharacter(ExelName)
+                ExelName = lower(string(ExelName));
+                [m,n] = size(ExelName);
+                obj(m,n) = Exel();
+                for i = 1:m
+                    for j = 1:n
+                        obj(i,j).ExelName = ExelName{i,j};
                     end
-                else
-                    error('Exel:invalidExelNameDataType', ...
-                        ['ExelName must be char, string ', ...
-                        'or a cell array of char'])
                 end
                 
                 % creating/getting BluetoothObj
@@ -172,9 +166,9 @@ classdef Exel < handle
                 
                 % validating inputs
                 if mod(numel(varargin),2)==0
-                for i = 1:2:numel(varargin)
-                    set(obj,varargin{i},varargin{i+1})
-                end
+                    for i = 1:2:numel(varargin)
+                        set(obj,varargin{i},varargin{i+1})
+                    end
                 else
                     error('Exel:notPairedInputArguments', ...
                         'Input arguments must be paired.')
