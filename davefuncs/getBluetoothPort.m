@@ -26,7 +26,7 @@ if ispc
     % getting device Key and ContainerID from Friendly Name
     DevKey = REG.Key(REG.FriendlyName == FriendlyName);
     if isempty(DevKey)
-        error('getCOM:unknownDevice', ...
+        error('getCOM:Win:unknownDevice', ...
             'Device with FriendlyName %s not present in the registry.', ...
             FriendlyName)
     end
@@ -41,9 +41,32 @@ if ispc
     % getting COM port
     port = REG.PortName(REG.Key == DevParametersKey);
     port = port{1,1};
+    
+    
 elseif ismac
-    error('getBluetoothPort:unsupportedMachine', ...
-        'Still not supported on mac machines.')
+    % setting initial part of the port name
+    port = ['/dev/tty.',FriendlyName,'-'];
+    
+    % getting serial list
+    list = seriallist()';
+    
+    % cycling to find corrispondencies
+    lp = length(port);
+    for i = 1:length(list)
+        if length(list{i,1}) > lp
+            if strcmp(list{i,1}(1:lp),port)
+                port = list{i,1};
+                return
+            end
+        end
+    end
+    
+    % if here, no device found
+    error('getCOM:Mac:unknownDevice', ...
+        'Device with FriendlyName %s not present in dev.', ...
+        FriendlyName)
+    
+    
 else % linux case
     error('getBluetoothPort:unsupportedMachine', ...
         'Still not supported on linux machines.')
