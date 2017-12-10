@@ -1,6 +1,6 @@
 function createInternalFigure(obj)
 % creating figure
-Figure = figure('Visible','off');
+Figure = figure('Visible','off','Position',get(0,'ScreenSize'));
 
 % defining AxesWidth (in sec)
 AxesWidth = 15;
