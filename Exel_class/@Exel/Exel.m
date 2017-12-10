@@ -122,8 +122,8 @@ classdef Exel < handle
         % Values Required to stop acquisition
         ValuesRequired = 0; % AutoStop * SamplingFrequency
         
-        % bluetooth vars
-        BluetoothObj
+        % Instrument vars
+        Instrument
         DisplacedData = [];
     end
     
@@ -141,6 +141,12 @@ classdef Exel < handle
             %
             %    See also CONNECT, DISCONNECT, START, STOP
             
+            % validating machine
+            if islinux
+                error('Exel:Exel:unsupportedSystem', ...
+                    'Linux OS is not yet supported')
+            end
+            
             % if nargin==0 preallocating, if not:
             if nargin~=0
                 % validating ExelName
@@ -154,8 +160,8 @@ classdef Exel < handle
                     end
                 end
                 
-                % creating/getting BluetoothObj
-                bluetouch(obj)
+                % creating/getting Instrument
+                instrtouch(obj)
                 
                 % setting default properties
                 set(obj,'AutoStop',15)
@@ -195,9 +201,16 @@ classdef Exel < handle
     end
     
     methods (Access = private)
-        bluetouch(obj)
-        command(obj,CommandType)
-        exelcallback(obj,~,~)
+        % to send configuration commands
+        confcommand(obj,CommandType)
+        
+        % callback to execute during acquisition
+        instrcallback(obj,~,~)
+        
+        % checking existence/create instrument for communication
+        instrtouch(obj)
+        
+        % internal figure functionalities
         createInternalFigure(obj)
         updateInternalFigure(obj,~,~)
         figCloseRequestFcn(obj,~,~)

@@ -35,7 +35,7 @@ obj.ExelFigure.Figure.Visible = 'on';
 
 % starting data stream
 try
-    fwrite(obj.BluetoothObj,char(hex2dec('3D')))
+    fwrite(obj.Instrument,char(hex2dec('3D')))
     obj.StartTime = datetime('now');
     obj.AcquisitionStatus = 'on';
     fprintf('    Data stream started\n')

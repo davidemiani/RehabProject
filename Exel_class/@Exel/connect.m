@@ -3,8 +3,8 @@ function connect(obj)
 %
 %     CONNECT(OBJ) connects the Exel IMU associated to the Exel object OBJ.
 %     This method opens a communication via the fopen method for Bluetooth
-%     objects, then sends the right commands to be sure that we will
-%     receive the data we want.
+%     objects, then sends the configuration commands (to be sure that we
+%     will receive the data we want).
 %
 %     Example:
 %        obj = Exel('EXLs3_0067');
@@ -27,18 +27,18 @@ end
 fprintf('--- CONNECTING    %s ---\n',obj.ExelName)
 
 % updating BluetoothFcn properties
-obj.BluetoothObj.InputBufferSize = obj.BufferSize * 2;
-obj.BluetoothObj.BytesAvailableFcnMode = 'byte';
-obj.BluetoothObj.BytesAvailableFcnCount = obj.BufferSize;
-obj.BluetoothObj.BytesAvailableFcn = @obj.exelcallback;
-obj.BluetoothObj.Timeout = 2;
+obj.Instrument.InputBufferSize = obj.BufferSize * 2;
+obj.Instrument.BytesAvailableFcnMode = 'byte';
+obj.Instrument.BytesAvailableFcnCount = obj.BufferSize;
+obj.Instrument.BytesAvailableFcn = @obj.instrcallback;
+obj.Instrument.Timeout = 2;
 
 % once the Bluetooth object is created, we have to open the
 % communication, thanks to a simple use of fopen
 if strcmp(obj.ConnectionStatus,'closed')
     % opening communication
     try
-        fopen(obj.BluetoothObj);
+        fopen(obj.Instrument);
         obj.ConnectionStatus = 'open';
         fprintf('    Connection opened\n')
     catch ME
@@ -46,8 +46,8 @@ if strcmp(obj.ConnectionStatus,'closed')
         rethrow(ME)
     end
     
-    % sending commands
-    command(obj,'PacketTypeCommand')
+    % sending configuration commands
+    confcommand(obj,'PacketTypeCommand')
     
     % printing success (state reached only without exceptions)
     fprintf('    SUCCESS!! :-)\n\n')
@@ -55,8 +55,8 @@ elseif strcmp(obj.AcquisitionStatus,'off')
     % if already connected but not running
     fprintf('    Already connected\n')
     
-    % sending commands anyway
-    command(obj,'PacketTypeCommand')
+    % sending configuration commands anyway
+    confcommand(obj,'PacketTypeCommand')
     
     % printing success (state reached only without exceptions)
     fprintf('    SUCCESS!! :-)\n\n')

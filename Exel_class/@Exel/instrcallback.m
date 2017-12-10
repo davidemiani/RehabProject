@@ -1,5 +1,5 @@
-function exelcallback(obj,~,~)
-% EXELCALLBACK
+function instrcallback(obj,~,~)
+% INSTRCALLBACK
 %
 % See also 
 
@@ -10,7 +10,7 @@ end
 
 % reading data from buffer
 rawData = [obj.DisplacedData; ...
-    fread(obj.BluetoothObj,obj.BufferSize - numel(obj.DisplacedData))];
+    fread(obj.Instrument,obj.BufferSize - numel(obj.DisplacedData))];
 
 % recording time
 obj.LastSampleTime = datetime('now');

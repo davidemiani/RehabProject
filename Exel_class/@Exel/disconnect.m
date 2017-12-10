@@ -35,7 +35,7 @@ fprintf('--- DISCONNECTING %s ---\n',obj.ExelName)
 % disconnect if necessary
 if strcmp(obj.ConnectionStatus,'open')
     try
-        fclose(obj.BluetoothObj);
+        fclose(obj.Instrument);
         obj.ConnectionStatus = 'closed';
         fprintf('    Connection closed\n')
     catch ME
