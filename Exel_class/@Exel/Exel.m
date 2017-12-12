@@ -52,6 +52,7 @@ classdef Exel < handle
         % settable using set (or defining the object)
         
         Segment
+        Subject
         AutoStop
         PacketName
         AccFullScale

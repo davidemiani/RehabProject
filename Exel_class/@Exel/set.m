@@ -43,6 +43,11 @@ if isprop(obj,PropertyName)
             mustBePositive(PropertyValue)
             obj.AutoStop = PropertyValue;
             
+        case 'Subject'
+            % validating Subject
+            mustBeCharacter(PropertyValue)
+            obj.Subject = PropertyValue;
+            
         case 'PacketName'
             % validating PacketName
             mustBeMember(PropertyValue,{'A'})              % values missing
