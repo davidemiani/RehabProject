@@ -30,7 +30,7 @@ TestDuration = 10;
 ExelFigure = testFigure1();
 
 % creating the object
-obj = Exel(ExelName,'ExelFigure',ExelFigure,'SamplingFcn',@testFunc);
+obj = Exel(ExelName,'ExelFigure',ExelFigure,'SamplingFcn',@testFunc1);
 set(obj,'AutoStop',TestDuration)
 
 % starting it, if error, exiting

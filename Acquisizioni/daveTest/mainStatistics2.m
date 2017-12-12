@@ -17,7 +17,9 @@ clc, close all, clearExcept csd acqpath
 
 % preallocating data structure
 angles = {'20';'30';'40';'50';'60';'70';'90';'120'}; nAngles = numel(angles);
-subjects = {'CM94';'FM94';'FP94';'GL94'}; nSubjects = numel(subjects); % missing MC94 & DM94
+subjects = {'CM94';'FM94';'FP94';'GL94';'MC94';'DM94'}; nSubjects = numel(subjects);
+exelnames = [repmat({'EXLs3_0070'},4,1);repmat({'EXLs3_0067'},2,1)];
+
 rotations = {'E'; 'I'; 'N'}; nRotations = numel(rotations);
 for k1 = 1:nSubjects
     for k2 = 1:nAngles
@@ -55,14 +57,22 @@ for i = 1:numel(files)
     cRot = nameSplitted{1,2}(2); % trovo la rotazione
     cSbj = nameSplitted{1,3}(1:end-4); % trovo il soggetto
     load(paths{i,1}) % carico il dato
-    if isempty(dataHum) % se è vuoto ciaone
+    if isempty(dataHum) % se vuoto ciaone
         angles1 = [];
         angles2 = [];
         angles3 = [];
     else % altrimenti calcolo gli angoli
+        % creo un oggetto fittizio
+        if isnumeric(dataHum)
+            obj.ExelData.AccX = dataHum(:,4);
+            obj.ExelData.AccY = dataHum(:,5);
+            obj.ExelData.AccZ = dataHum(:,6);
+            obj.ExelName = exelnames{i,1};
+        end
+        % calcolo gli angoli
         angles1 = computeHomerAngle1(dataHum(:,4:6));
         angles2 = computeHomerAngle2(dataHum(:,4:6));
-        angles3 = computeHomerAngle3(dataHum(:,4:6))'; % trasposizione: computeHomerAngle3 esce una riga e non una colonna
+        %angles3 = computeHomerAngle3(dataHum(:,4:6))'; % trasposizione: computeHomerAngle3 esce una riga e non una colonna
     end
     
     % popolo la struttura
@@ -75,7 +85,7 @@ for i = 1:numel(files)
     data.(cSbj).(cAngStr).(cRot).comp2 = ...
         angles2;
     
-    data.(cSbj).(cAngStr).(cRot).comp3 = ...
+    %data.(cSbj).(cAngStr).(cRot).comp3 = ...
         angles3;
 end
 
@@ -209,8 +219,8 @@ for r = 1:nRotations
         anglesd, erroreTotaleTrigEval2, 'ko-.', ...
         anglesd,zeros(size(anglesd)))
     grid minor
-    ylabel('gradi (°)')
-    xlabel('gradi (°)')
+    ylabel('gradi (ï¿½)')
+    xlabel('gradi (ï¿½)')
     legend('Metodo Trigonometrico 1', 'Metodo Proiezione', 'Metodo Trigonometrico 2')
     title(['Errore totale per ogni angolo per la rotazione ', rotations{r}])
 end
