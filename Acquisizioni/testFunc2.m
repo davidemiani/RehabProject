@@ -20,9 +20,11 @@ if ElapsedTime > 0.3333
     
     % getting line
     switch obj.ExelName
-        case 'EXLs3'
+        case 'EXLs3_0159'
+            % homer
             Line = 1;
         case 'EXLs3_0067'
+            % thorax
             Line = 2;
     end
     

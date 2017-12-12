@@ -5,7 +5,7 @@ function ExelFigure = testFigure2()
 Figure = figure('Visible','off','Position',get(0,'ScreenSize'));
 
 % defining VarNames
-VarNames = {'Homer Angle';'Trunk Angle'};
+VarNames = {'Homer Angle';'Thorax Angle'};
 
 % defining sizes
 [nAxes,nLines] = size(VarNames);
