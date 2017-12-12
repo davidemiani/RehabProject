@@ -16,7 +16,6 @@ classdef Exel < handle
     %   SamplingFrequency
     %
     %   StartTime
-    %   LastSampleTime
     %   PacketsRetrived
     %   ConnectionStatus
     %   AcquisitionStatus
@@ -63,7 +62,6 @@ classdef Exel < handle
         % only gettable prop
         
         StartTime
-        LastSampleTime
         PacketsRetrived = 0;
         ConnectionStatus = 'closed';
         AcquisitionStatus = 'off';

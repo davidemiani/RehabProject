@@ -25,12 +25,12 @@ clc, close all, clearExcept csd datapath
 touch(datapath);
 
 % setting ExelName and Fig
-ExelName = 'EXLs3_0070';
-TestDuration = 10;
-ExelFigure = testFigure1();
+ExelName = {'EXLs3';'EXLs3_0067'};
+TestDuration = 60;
+ExelFigure = testFigure2();
 
 % creating the object
-obj = Exel(ExelName,'ExelFigure',ExelFigure,'SamplingFcn',@testFunc);
+obj = Exel(ExelName,'ExelFigure',ExelFigure,'SamplingFcn',@testFunc2);
 set(obj,'AutoStop',TestDuration)
 
 % starting it, if error, exiting
@@ -41,7 +41,7 @@ catch ME
     rethrow(ME)
 end
 
-
+return
 %% SAVING DATA
 %%
 % waiting for the acquisition stop

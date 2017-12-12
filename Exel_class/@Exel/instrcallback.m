@@ -12,9 +12,6 @@ end
 rawData = [obj.DisplacedData; ...
     fread(obj.Instrument,obj.BufferSize - numel(obj.DisplacedData))];
 
-% recording time
-obj.LastSampleTime = datetime('now');
-
 % finding new pkt starts indexes
 pktStartIndexes = strfind(rawData',obj.PacketHead)';
 

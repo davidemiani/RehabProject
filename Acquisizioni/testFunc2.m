@@ -1,7 +1,10 @@
-function testFunc(obj)
-timeElapsed = (height(obj.ExelData)-obj.ExelFigure.LastFrame) / ...
+function testFunc2(obj)
+% computing Elapsed Time
+ElapsedTime = (height(obj.ExelData)-obj.ExelFigure.LastFrame) / ...
     obj.SamplingFrequency;
-if timeElapsed > 0.3333
+
+% If ElapsedTime > 1/3 s, so plotting
+if ElapsedTime > 0.3333
     % computing indexes
     ind = (obj.ExelFigure.LastFrame+1:height(obj.ExelData))';
     
@@ -15,24 +18,22 @@ if timeElapsed > 0.3333
             obj.ExelFigure.AxesWidth;
     end
     
-    addpoints(obj.ExelFigure.Lines(1,1),time,obj.ExelData.AccX(ind,1));
-    addpoints(obj.ExelFigure.Lines(1,2),time,obj.ExelData.AccY(ind,1));
-    addpoints(obj.ExelFigure.Lines(1,3),time,obj.ExelData.AccZ(ind,1));
+    % getting line
+    switch obj.ExelName
+        case 'EXLs3'
+            Line = 1;
+        case 'EXLs3_0067'
+            Line = 2;
+    end
     
-    angle1 = computeHomerAngle1( ...
-        obj.ExelData.AccX(ind,1), ...
-        obj.ExelData.AccY(ind,1), ...
-        obj.ExelData.AccZ(ind,1)  ...
-        );
-    
+    % computing Angle
     angle2 = computeHomerAngle2( ...
         obj.ExelData.AccX(ind,1), ...
         obj.ExelData.AccY(ind,1), ...
         obj.ExelData.AccZ(ind,1)  ...
         );
     
-    addpoints(obj.ExelFigure.Lines(2,1),time,angle1);
-    addpoints(obj.ExelFigure.Lines(2,2),time,angle2);
+    addpoints(obj.ExelFigure.Lines(Line,1),time,angle2);
     
     % showing now new values
     drawnow
