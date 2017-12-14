@@ -4,7 +4,7 @@ function mustBeCharacter(A)
 %   MATLAB call ischar, isstring, and iscellstr to determine if a value is
 %   character.
 %
-%   See also: ischar, iscellstr, isstring
+%   See also: ischar, iscellstr, isstring, mustBeChar
 %
 %   ------------------------------------
 %   CREDITS:     Davide Miani (dec 2017)
