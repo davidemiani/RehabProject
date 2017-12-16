@@ -21,9 +21,7 @@ while success == 0 && nAttempts < 3
 end
 if success == 1
     flushinput(obj.Instrument)
-    fprintf('    %s sent\n',CommandType)
 else
-    fprintf('    %s error\n\n',CommandType)
     error('Exel:confcommand:acknowledgementError', ...
         ['Acknowledgement byte for %s not received ', ...
         'or it is not equal to 1.'],CommandType)

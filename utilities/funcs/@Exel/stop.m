@@ -24,20 +24,8 @@ if strcmp(obj.AcquisitionStatus,'off')
     return
 end
 
-% printing
-fprintf('--- STOPPING IMU %s ---\n',obj.ExelName)
-
 % stopping
-try
-    fwrite(obj.Instrument,char(hex2dec('3A')))
-    pause(0.5), flushinput(obj.Instrument)
-    obj.AcquisitionStatus = 'off';
-    fprintf('    Data stream stopped\n')
-catch ME
-    fprintf('    Stopping error\n\n')
-    rethrow(ME)
-end
-
-% printing success (state reached only without exceptions)
-fprintf('    SUCCESS!! :-)\n\n')
+fwrite(obj.Instrument,char(hex2dec('3A')))
+pause(0.5), flushinput(obj.Instrument)
+obj.AcquisitionStatus = 'off';
 end

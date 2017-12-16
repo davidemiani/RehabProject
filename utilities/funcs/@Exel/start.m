@@ -23,9 +23,6 @@ if numel(obj)>1
     return
 end
 
-% printing
-fprintf('--- STARTING   %s ---\n',obj.ExelName)
-
 % updating ValuesRequired
 obj.ValuesRequired = obj.ValuesRequired + ...
     obj.AutoStop * obj.SamplingFrequency;
@@ -34,16 +31,7 @@ obj.ValuesRequired = obj.ValuesRequired + ...
 obj.ExelFigure.Figure.Visible = 'on';
 
 % starting data stream
-try
-    fwrite(obj.Instrument,char(hex2dec('3D')))
-    obj.StartTime = datetime('now');
-    obj.AcquisitionStatus = 'on';
-    fprintf('    Data stream started\n')
-catch ME
-    fprintf('    Starting error\n\n')
-    rethrow(ME)
-end
-
-% printing success (state reached only without exceptions)
-fprintf('    SUCCESS!! :-)\n\n')
+fwrite(obj.Instrument,char(hex2dec('3D')))
+obj.StartTime = datetime('now');
+obj.AcquisitionStatus = 'on';
 end

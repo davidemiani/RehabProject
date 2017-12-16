@@ -23,9 +23,6 @@ if strcmp(obj.ConnectionStatus,'open')
     return
 end
 
-% printing
-fprintf('--- CONNECTING    %s ---\n',obj.ExelName)
-
 % updating BluetoothFcn properties
 obj.Instrument.InputBufferSize = obj.BufferSize * 2;
 obj.Instrument.BytesAvailableFcnMode = 'byte';
@@ -37,29 +34,14 @@ obj.Instrument.Timeout = 2;
 % communication, thanks to a simple use of fopen
 if strcmp(obj.ConnectionStatus,'closed')
     % opening communication
-    try
-        fopen(obj.Instrument);
-        obj.ConnectionStatus = 'open';
-        fprintf('    Connection opened\n')
-    catch ME
-        fprintf('    Connection error\n\n')
-        rethrow(ME)
-    end
+    fopen(obj.Instrument);
+    obj.ConnectionStatus = 'open';
     
     % sending configuration commands
     confcommand(obj,'PacketTypeCommand')
-    
-    % printing success (state reached only without exceptions)
-    fprintf('    SUCCESS!! :-)\n\n')
 elseif strcmp(obj.AcquisitionStatus,'off')
-    % if already connected but not running
-    fprintf('    Already connected\n')
-    
     % sending configuration commands anyway
     confcommand(obj,'PacketTypeCommand')
-    
-    % printing success (state reached only without exceptions)
-    fprintf('    SUCCESS!! :-)\n\n')
 else
     % warning if the sensor is still/already running
     warning('Exel:connect:connectOnRunningObj', ...

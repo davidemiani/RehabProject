@@ -24,6 +24,11 @@ if numel(obj)>1
     return
 end
 
+% to avoid empty indexing
+if isempty(obj)
+    return
+end
+
 % checking for prop existency
 if isprop(obj,PropertyName)
     % switching between cases
@@ -110,6 +115,10 @@ if isprop(obj,PropertyName)
             % validating ExelFigure
             obj.ExelFigure = PropertyValue;
             obj.ExelFigureMode = 'Custom';
+            
+        case 'UserData'
+            % validating UserData
+            obj.UserData = PropertyValue;
             
         otherwise
             % The user is trying to set a private or hidden property

@@ -29,21 +29,9 @@ if strcmp(obj.AcquisitionStatus,'on')
     stop(obj)
 end
 
-% printing
-fprintf('--- DISCONNECTING %s ---\n',obj.ExelName)
-
 % disconnect if necessary
 if strcmp(obj.ConnectionStatus,'open')
-    try
-        fclose(obj.Instrument);
-        obj.ConnectionStatus = 'closed';
-        fprintf('    Connection closed\n')
-    catch ME
-        fprintf('    Disconnection Error\n\n')
-        rethrow(ME)
-    end
+    fclose(obj.Instrument);
+    obj.ConnectionStatus = 'closed';
 end
-
-% printing success (state reached only without exceptions)
-fprintf('    SUCCESS!! :-)\n\n')
 end

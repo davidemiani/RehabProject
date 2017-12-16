@@ -6,9 +6,6 @@ function instrtouch(obj)
 % main cycle (on dimensions)
 for i = 1:m
     for j = 1:n
-        % printing
-        fprintf('--- CREATING INSTRUMENT OBJ FOR %s... ',obj(i,j).ExelName)
-        
         % getting instruments already created with the same ExelName
         instruments = instrfind('UserData',obj(i,j).ExelName);
         
@@ -41,10 +38,6 @@ for i = 1:m
             % if already created, assigning it
             obj(i,j).Instrument = instruments(1,1);
         end
-        
-        % printing the end
-        fprintf('DONE!!\n')
     end
 end
-fprintf('\n')
 end
