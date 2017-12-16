@@ -25,8 +25,8 @@ clc, close all, clearExcept csd datapath
 touch(datapath);
 
 % setting ExelName and Fig
-ExelName = {'EXLs3_0159';'EXLs3_0067'};
-TestDuration = 60;
+ExelName = {'EXLs3_0067';'EXLs3_0070'};
+TestDuration = 120;
 ExelFigure = testFigure2();
 
 % creating the object

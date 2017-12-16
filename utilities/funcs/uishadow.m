@@ -31,6 +31,7 @@ if enable
     shadow.Visible = 'on';
 else
     shadow.Visible = 'off';
+    delete(shadow)
 end
 
 % making the shadow appear immediately

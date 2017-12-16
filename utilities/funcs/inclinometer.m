@@ -1,4 +1,4 @@
-function angle = computeAngle(varargin)
+function angle = inclinometer(varargin)
 if nargin == 1
     A = varargin{1};
 elseif nargin == 3
