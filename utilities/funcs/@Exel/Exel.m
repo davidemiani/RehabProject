@@ -7,8 +7,10 @@ classdef Exel < handle
     %   ExelFigure
     %
     %   Segment
+    %   Subject
     %   AutoStop
     %   PacketName
+    %   Calibration
     %   AccFullScale
     %   GyrFullScale
     %
@@ -55,6 +57,7 @@ classdef Exel < handle
         Subject
         AutoStop
         PacketName
+        Calibration
         AccFullScale
         GyrFullScale
         SamplingFcn
@@ -168,6 +171,7 @@ classdef Exel < handle
                 set(obj,'AccFullScale',2)
                 set(obj,'GyrFullScale',250)
                 set(obj,'SamplingFrequency',50)
+                set(obj,'Calibration',eye(3))
                 
                 % validating inputs
                 if mod(numel(varargin),2)==0

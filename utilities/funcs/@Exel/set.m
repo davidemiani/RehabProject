@@ -83,6 +83,14 @@ if isprop(obj,PropertyName)
                         obj.PacketName)
             end
             
+        case 'Calibration'
+            % validating Calibration
+            mustBeNumeric(PropertyValue)
+            [m,n] = size(PropertyValue);
+            if m==3 && n==3
+                obj.Calibration = PropertyValue;
+            end
+            
         case 'AccFullScale'
             % validating AccFullScale
             mustBeNumeric(PropertyValue)
