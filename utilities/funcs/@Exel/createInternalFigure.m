@@ -46,7 +46,6 @@ obj.ExelFigure.Lines = Lines;
 obj.ExelFigure.Figure = Figure;
 obj.ExelFigure.VarNames = VarNames;
 obj.ExelFigure.AxesWidth = AxesWidth;
-obj.ExelFigure.LastFrame = 0;
 
 % setting SamplingFcn
 obj.SamplingFcn = @obj.updateInternalFigure;

@@ -47,6 +47,7 @@ classdef Exel < handle
     
     properties (SetAccess = public)
         UserData
+        LastFrame = 0;
         ExelFigure
     end
     
@@ -64,7 +65,6 @@ classdef Exel < handle
         SamplingFrequency
         
         % only gettable prop
-        
         StartTime
         PacketsRetrived = 0;
         ConnectionStatus = 'closed';
@@ -192,9 +192,11 @@ classdef Exel < handle
     end
     
     methods (Access = public)
-        % get & set
+        % get, set & reset
         PropertyValue = get(obj,PropertyName)
         set(obj,PropertyName,PropertyValue)
+        reset(obj)
+        
         
         % connection and others
         connect(obj)
