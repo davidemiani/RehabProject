@@ -56,7 +56,7 @@ end
 
 % checking for the end
 if height(obj.ExelData) >= obj.ValuesRequired
-    disconnect(obj)
+    stop(obj)
 else
     % calling SamplingFcn
     obj.SamplingFcn(obj)
