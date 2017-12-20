@@ -1,6 +1,6 @@
 function savefig2(fhandle,filepath,dim,autoclose)
-%SAVEFIG to save MATLAB figures in several formats.
-%   SAVEFIG(FHANDLE,FILEPATH,EXT,DIM,AUTOCLOSE)
+%SAVEFIG2 to save MATLAB figures in several formats.
+%   SAVEFIG2(FHANDLE,FILEPATH,EXT,DIM,AUTOCLOSE)
 %   -------------------------------------------
 %   INPUTS:
 %   * FHANDLE: (Figure) a valid MATLAB figure handle;
@@ -17,7 +17,7 @@ function savefig2(fhandle,filepath,dim,autoclose)
 %   Davide Miani (jun 2017)
 %   -------------------------------------------
 %   LAST REVIEW:
-%   Davide Miani (jun 2017)
+%   Davide Miani (dec 2017)
 %   -------------------------------------------
 %   MAIL TO:
 %   * davide.miani2@gmail.com

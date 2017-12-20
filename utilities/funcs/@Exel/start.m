@@ -23,8 +23,8 @@ if numel(obj)>1
     return
 end
 
-% updating ValuesRequired
-obj.ValuesRequired = obj.ValuesRequired + ...
+% updating SamplesRequired
+obj.SamplesRequired = obj.SamplesRequired + ...
     obj.AutoStop * obj.SamplingFrequency;
 
 % showing ExelFigure

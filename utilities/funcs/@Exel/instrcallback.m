@@ -55,7 +55,7 @@ for iPkt = 1:obj.PacketsRetrived
 end
 
 % checking for the end
-if height(obj.ExelData) >= obj.ValuesRequired
+if height(obj.ExelData) >= obj.SamplesRequired
     stop(obj)
 else
     % calling SamplingFcn

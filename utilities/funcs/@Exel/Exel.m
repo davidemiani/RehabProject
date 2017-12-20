@@ -18,7 +18,6 @@ classdef Exel < handle
     %   SamplingFrequency
     %
     %   StartTime
-    %   PacketsRetrived
     %   ConnectionStatus
     %   AcquisitionStatus
     %
@@ -66,7 +65,6 @@ classdef Exel < handle
         
         % only gettable prop
         StartTime
-        PacketsRetrived = 0;
         ConnectionStatus = 'closed';
         AcquisitionStatus = 'off';
         
@@ -121,12 +119,16 @@ classdef Exel < handle
         % GyrFullScale related properties
         % ... ancora da fare
         
-        % Values Required to stop acquisition
-        ValuesRequired = 0; % AutoStop * SamplingFrequency
+        % Number of packet retrived in an acquisition instance
+        PacketsRetrived = 0;
+        % If in an istanxe PacketsRetrive~=PacketsBuffered we will have
+        % some displaced data
+        DisplacedData = [];
+        % Samples required to stop acquisition
+        SamplesRequired = 0; % AutoStop * SamplingFrequency
         
         % Instrument vars
         Instrument
-        DisplacedData = [];
     end
     
     methods (Access = public)
