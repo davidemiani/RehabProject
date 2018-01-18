@@ -2,7 +2,6 @@ classdef ExelCompressed
     properties (SetAccess = private)
         % sensor related
         ExelName
-        ExelData
         
         % test related
         Segment
@@ -19,6 +18,7 @@ classdef ExelCompressed
     end
     
     properties (SetAccess = public)
+        ExelData
         UserData
     end
     
