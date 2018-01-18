@@ -1,5 +1,5 @@
 pulisci
-load(fullfile(pwd,'2018-01-18','MM17_04.mat'))
+load(fullfile(pwd,'2018-01-18','MM17_06.mat'))
 acc_h = obj(1,1).ExelData{1,3:5}; acc_h = acc_h./vecnorm(acc_h,2,2);
 acc_t = obj(2,1).ExelData{1,3:5}; acc_t = acc_t./vecnorm(acc_t,2,2);
 
