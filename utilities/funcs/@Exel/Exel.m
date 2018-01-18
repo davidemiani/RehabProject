@@ -155,7 +155,7 @@ classdef Exel < handle
             if nargin~=0
                 % validating ExelName
                 mustBeCharacter(ExelName)
-                ExelName = unique(string(ExelName));
+                ExelName = unique(string(ExelName),'stable');
                 [m,n] = size(ExelName);
                 obj(m,n) = Exel();
                 for i = 1:m
