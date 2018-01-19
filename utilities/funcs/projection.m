@@ -31,10 +31,10 @@ A = obj.ExelData{ind,3:5} * obj.Calibration;
 G = repmat([0,1,0],h,1);
 
 % computing angle with projection method
-angle = 2*acosd(vecnorm(A./vecnorm(A,2,2)-[0,-1,0],2,2)/2);
-%angle = acosd(dot(A,G,2)./(vecnorm(A,2,2).*vecnorm(G,2,2)));
+%angle = 2*acosd(vecnorm(A./vecnorm(A,2,2)-[0,-1,0],2,2)/2);
+angle = acosd(dot(A,G,2)./(vecnorm(A,2,2).*vecnorm(G,2,2)));
 
-% 
+% thorax corrections
 if strcmp(obj.Segment,'Thorax')
     ind_SagittalRotation = abs(A(:,3))>abs(A(:,1));
     ind_FrontalRotation = not(ind_SagittalRotation);
