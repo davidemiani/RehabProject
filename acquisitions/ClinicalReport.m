@@ -47,8 +47,14 @@ omega = discDerivative(theta,t0);
 ind = (abs(omega) < omega_th)'; % row array
 
 % getting ind rises and falls
-rises = [0,strfind(ind,[0,1])]+1;
-falls = [strfind(ind,[1,0]),h-1]+1;
+rises = strfind(ind,[0,1])+1;
+falls = strfind(ind,[1,0])+1;
+if falls(1,1) < rises(1,1)
+    rises = [1,rises];
+end
+if rises(1,end) > falls(1,end)
+    falls = [falls,h];
+end
 
 % now we have a static period between a rise and a fall index,
 % so we can compute static period durations as:

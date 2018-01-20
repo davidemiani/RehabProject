@@ -52,7 +52,6 @@ classdef Exel < handle
     
     properties (SetAccess = private)
         % settable using set (or defining the object)
-        
         Segment
         Subject
         AutoStop
@@ -80,7 +79,7 @@ classdef Exel < handle
     
     properties (Hidden, SetAccess = private)%, GetAccess = private)
         % Parameters
-        Ka = 2 * 9.807 / 32768;
+        Ka = 2 / 32768;
         Kg = 250 / 32768;
         Km = 0.007629;
         qn = 1 / 16384;
