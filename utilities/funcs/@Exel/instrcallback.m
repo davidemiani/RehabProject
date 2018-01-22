@@ -42,7 +42,7 @@ obj.ExelData = [obj.ExelData; ...
 % filling new rows
 for iPkt = 1:obj.PacketsRetrived
     for iData = 1:numel(obj.DataNames)
-        cVar = obj.DataNames{1,iData};
+        cVar = obj.DataNames{iData,1};
         if ismember(cVar,obj.ExelVars)
             cPktIndexes = pktStartIndexes(iPkt) + obj.ByteGroups{iData,1};
             cData = rawData(cPktIndexes,1);
@@ -58,8 +58,10 @@ end
 if height(obj.ExelData) >= obj.SamplesRequired
     stop(obj)
 else
-    % calling SamplingFcn
-    obj.SamplingFcn(obj)
+    if ~isempty(obj.SamplingFcn)
+        % calling SamplingFcn
+        obj.SamplingFcn(obj)
+    end
 end
 
 

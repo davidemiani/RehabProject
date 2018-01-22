@@ -8,7 +8,7 @@
 pulisci
 
 % loading a valid file from acquisition dir
-load(fullfile(pwd,'2018-01-19','MM17_01.mat'))
+load(fullfile(pwd,'2018-01-21','NS00_01.mat'))
 
 % getting sampling frequency and computing period
 sf = obj(1,1).SamplingFrequency;
@@ -49,6 +49,8 @@ ind = (abs(omega) < omega_th)'; % row array
 % getting ind rises and falls
 rises = strfind(ind,[0,1])+1;
 falls = strfind(ind,[1,0])+1;
+if isempty(rises),rises = 1;end
+if isempty(falls),falls = h;end
 if falls(1,1) < rises(1,1)
     rises = [1,rises];
 end
@@ -137,23 +139,31 @@ set(gca,'FontSize',25)
 
 %% PIE CHART
 %%
+% creating a new figure
+figure('Position',get(0,'ScreenSize'))
+
 % computing pie data
 PIEdata = [nnz(theta < 20), ...
     nnz(theta >= 20 & theta < 60), ...
     nnz(theta >= 60 & theta < 90), ...
     nnz(theta >= 90)] ./ numel(theta);
-PIEdata(PIEdata==0) = 0.009999;
+%PIEdata(PIEdata==0) = 0.009999;
 
-% plotting a pie
-figure('Position',get(0,'ScreenSize'))
+% plotting the pie chart
+warning('off','MATLAB:pie:NonPositiveData')
 p = pie(PIEdata);
+warning('on','MATLAB:pie:NonPositiveData')
+
+% some other plot stuff
 for j = 2:2:numel(p)
     p(1,j).FontSize = 25;
     p(1,j).Position = p(1,j).Position - p(1,j).Position*0.075;
 end
 title('PIE chart')
+warning('off','MATLAB:legend:IgnoringExtraEntries')
 legend('\theta<20','20\leq\theta<60', ...
     '60\leq\theta<90','\geq90','Location','Best')
+warning('on','MATLAB:legend:IgnoringExtraEntries')
 text(-0.9,-1.25, ...
     'Percentage of time spent in different angle ranges','FontSize',25)
 set(gca,'FontSize',25)

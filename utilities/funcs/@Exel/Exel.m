@@ -74,7 +74,7 @@ classdef Exel < handle
             'GyrX','GyrY','GyrZ', ...
             'MagX','MagY','MagZ', ...
             'Q0','Q1','Q2','Q3',  ...
-            'Vbat'});
+            'VBat'});
     end
     
     properties (Hidden, SetAccess = private)%, GetAccess = private)
@@ -82,14 +82,14 @@ classdef Exel < handle
         Ka = 2 / 32768;
         Kg = 250 / 32768;
         Km = 0.007629;
-        qn = 1 / 16384;
+        Qn = 1 / 16384;
         ExelFigureMode = 'Default';
         ExelVars = {'ProgrNum','PacketType', ...
             'AccX','AccY','AccZ', ...
             'GyrX','GyrY','GyrZ', ...
             'MagX','MagY','MagZ', ...
             'Q0','Q1','Q2','Q3',  ...
-            'Vbat'};
+            'VBat'};
         
         % Header when a new packet is received
         HeaderByte = hex2dec('20');
@@ -110,13 +110,13 @@ classdef Exel < handle
         Multiplier % i.e. [1;1;1;Ka;Ka;Ka;1];
         
         % SamplingFrequency related properties
-        % ... ancora da fare
+        % ... to be continued
         
         % AccFullScale related properties
-        % ... ancora da fare
+        % ... to be continued
         
         % GyrFullScale related properties
-        % ... ancora da fare
+        % ... to be continued
         
         % Number of packet retrived in an acquisition instance
         PacketsRetrived = 0;
@@ -169,8 +169,6 @@ classdef Exel < handle
                 % setting default properties
                 set(obj,'AutoStop',15)
                 set(obj,'PacketName','A')
-                set(obj,'AccFullScale',2)
-                set(obj,'GyrFullScale',250)
                 set(obj,'SamplingFrequency',50)
                 set(obj,'Calibration',eye(3))
                 

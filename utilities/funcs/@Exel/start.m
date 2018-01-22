@@ -28,7 +28,9 @@ obj.SamplesRequired = obj.SamplesRequired + ...
     obj.AutoStop * obj.SamplingFrequency;
 
 % showing ExelFigure
-obj.ExelFigure.Figure.Visible = 'on';
+if ~strcmp(obj.ExelFigure,'None')
+    obj.ExelFigure.Figure.Visible = 'on';
+end
 
 % starting data stream
 fwrite(obj.Instrument,char(hex2dec('3D')))
