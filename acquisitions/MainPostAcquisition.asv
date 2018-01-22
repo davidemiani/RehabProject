@@ -10,6 +10,12 @@ cd(acqdir);
 Nobjs = numel(obj); %2
 Ts = 1/obj(1,1).SamplingFrequency;
 
+%% sorting
+for i = 1:Nobjs
+    %if height(obj(i,1).ExelData)>10001
+        obj(i,1).ExelData.ProgrNum = ProgrNumSorting(obj(i,1).ExelData.ProgrNum);
+    %end
+end
 
 %% checking
 for i = 1:Nobjs
@@ -28,8 +34,11 @@ end
 %% synchronization 
 
 for i = 1:Nobjs
+    %seconds of each datetime considering the time lag between start function and the first packet,too 
     DataStart(i,1) = second(obj(i,1).StartTime) + Ts*obj(i,1).ExelData.ProgrNum(1);
 end
+
+%getting the last obj 
 [~,lastObjStart] = max(DataStart);
 timeToLastObj    = abs(DataStart-DataStart(lastObjStart));
 samplesToLastObj = floor(timeToLastObj/Ts);
@@ -41,20 +50,57 @@ if nnz(samplesToLastObj)
     end
 end
 
-% %% ProgrNum
-% % ProgrNum ranges from 0 to 10000 -> the counter restart after 10001 samples 
-% for i = 1:Nobjs
-%     Nsamples = height(obj(i,1).ExelData);
-%     FirstSample = obj(i,1).ExelData.ProgrNum(1);
-%     
-%     if Nsamples > 10000
-%         ProgrNumNew = (FirstSample:(Nsamples-1)+FirstSample);  
-%         obj(i,1).ExelData{:,1} = ProgrNumNew;
-%     end
-% end
 
 
+function vProgr = ProgrNumSorting(v)
+%ordinamento del vettore ProgrNum di ExelData eliminando i limiti 0-10000
+M = 10000;
 
+%trovo le posizioni in cui ricomincia la numerazione oppure c'è un salto
+dneg = find(diff(v)~=1);
+
+if isempty(dneg)
+    vProgr = v;
+    return
+end
+
+v = v';
+%divido il vettore v in intervalli aventi numerazione consecutiva
+vcell = mat2cell(v,1,[dneg(1) diff(dneg) length(v)-dneg(end)]);
+
+n_int = numel(vcell);
+first = vcell{1}(1);
+
+%nuovo vettore riordinato
+vprogr = first:vcell{1}(end);
+
+%nel for vengono analizzati tutti i casi di passaggio da un intervallo
+%all'altro
+
+for i = 2:n_int
+    Ncell = numel(vcell{i});
+    
+    if vcell{i-1}(end) == M & vcell{i}(1) == 0
+        Miss = 0;
+        
+    elseif vcell{i-1}(end) == M & vcell{i}(1) > 0
+        Miss = vcell{i}(1);
+        
+    elseif vcell{i-1}(end) < M & vcell{i}(1) == 0
+        Miss = M-vcell{i-1}(end);
+ 
+    elseif vcell{i-1}(end) < M & vcell{i}(1) > 0 & vcell{i-1}(end) > vcell{i}(1)
+        Miss = vcell{i}(1) + M-vcell{i-1}(end);
+        
+    elseif vcell{i-1}(end) < vcell{i}(1) 
+        Miss = vcell{i}(1) - vcell{i-1}(end) - 1
+        
+    end
+    
+    vprogr = [vprogr vprogr(end) + Miss + 1 : vprogr(end) + Ncell + Miss];
+
+end
+end
 function ExelData = AddMissRow(MissingPacketsReport,ExelData,MaxforInterp,PacketName)
 
 for int = 1:size(MissingPacketsReport.WhereMiss)
