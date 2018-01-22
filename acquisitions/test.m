@@ -16,7 +16,7 @@ try
     
     fprintf('Acquiring... ')
     start(obj)
-    waitfor(obj(2,1),'AcquisitionStatus','off')
+    waitfor(obj(1,1),'AcquisitionStatus','off')
     fprintf('DONE!!\n')
     
     fprintf('Disconnecting... ')
