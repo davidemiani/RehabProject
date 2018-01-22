@@ -55,28 +55,151 @@ if isprop(obj,PropertyName)
             
         case 'PacketName'
             % validating PacketName
-            mustBeMember(PropertyValue,{'A'})              % values missing
+            mustBeMember(PropertyValue,{'A','AGMOB'})              % values missing
             obj.PacketName = PropertyValue;
             switch obj.PacketName
                 case 'A'
                     obj.PacketType = hex2dec('81');
-                    obj.PacketHead = [obj.HeaderByte, obj.PacketType];
-                    obj.PacketTypeCommand = [hex2dec('64'), ...
-                        hex2dec('01'),hex2dec('38'), ...
-                        hex2dec('00'),obj.PacketType];
-                    obj.PacketTypeCommand = [obj.PacketTypeCommand, ...
+                    obj.PacketHead = [obj.HeaderByte,obj.PacketType];
+                    obj.PacketTypeCommand = [ ...
+                        hex2dec('64'), ...
+                        hex2dec('01'), ...
+                        hex2dec('38'), ...
+                        hex2dec('00'), ...
+                        obj.PacketType];
+                    obj.PacketTypeCommand = [ ...
+                        obj.PacketTypeCommand, ...
                         mod(sum(obj.PacketTypeCommand),256)];
                     
-                    obj.PacketSize = 11;
-                    obj.BufferSize = obj.PacketsBuffered * obj.PacketSize;
+                    obj.DataNames = { ...
+                        'HeaderByte'; ...
+                        'PacketType'; ...
+                        'ProgrNum'; ...
+                        'AccX'; ...
+                        'AccY'; ...
+                        'AccZ'; ...
+                        'CheckSum'};
+                    obj.ByteGroups = { ...
+                        0; ... % HeaderByte
+                        1; ... % PacketType
+                        [2;3]; ... % ProgrNum
+                        [4;5]; ... % AccX
+                        [6;7]; ... % AccY
+                        [8;9]; ... % AccZ
+                        10}; % CheckSum
+                    obj.ByteTypes = { ...
+                        'uint8'; ... % HeaderByte
+                        'uint8'; ... % PacketType
+                        'uint16'; ... % ProgrNum
+                        'int16'; ... % AccX
+                        'int16'; ... % AccY
+                        'int16'; ... % AccZ
+                        'uint8'}; % CheckSum
+                    obj.Multiplier = [ ...
+                        1; ... % HeaderByte
+                        1; ... % PacketType
+                        1; ... % ProgrNum
+                        obj.Ka; ... % AccX
+                        obj.Ka; ... % AccY
+                        obj.Ka; ... % AccZ
+                        1]; % CheckSum
                     
-                    obj.DataNumber = 7;
-                    obj.ByteGroups = {0;1;[2;3];[4;5];[6;7];[8;9];10};
-                    obj.ByteTypes = {'uint8';'uint8';'uint16';'int16'; ...
-                        'int16';'int16';'uint8'};
-                    obj.DataNames = {'PacketHeader','PacketType', ...
-                        'ProgrNum','AccX','AccY','AccZ','CheckSum'};
-                    obj.Multiplier = [1;1;1;obj.Ka;obj.Ka;obj.Ka;1];
+                    obj.DataNumber = size(obj.DataNames,1);
+                    obj.PacketSize = sum(cellfun(@numel,obj.ByteGroups));
+                    obj.BufferSize = obj.PacketsBuffered * obj.PacketSize;
+                case 'AGMOB'
+                    obj.PacketType = hex2dec('9F');
+                    obj.PacketHead = [obj.HeaderByte,obj.PacketType];
+                    obj.PacketTypeCommand = [ ...
+                        hex2dec('64'), ...
+                        hex2dec('01'), ...
+                        hex2dec('38'), ...
+                        hex2dec('00'), ...
+                        obj.PacketType];
+                    obj.PacketTypeCommand = [ ...
+                        obj.PacketTypeCommand, ...
+                        mod(sum(obj.PacketTypeCommand),256)];
+                    
+                    obj.DataNames = { ...
+                        'HeaderByte'; ...
+                        'PacketType'; ...
+                        'ProgrNum'; ...
+                        'AccX'; ...
+                        'AccY'; ...
+                        'AccZ'; ...
+                        'GyrX'; ...
+                        'GyrY'; ...
+                        'GyrZ'; ...
+                        'MagX'; ...
+                        'MagY'; ...
+                        'MagZ'; ...
+                        'Q0'; ...
+                        'Q1'; ...
+                        'Q2'; ...
+                        'Q3'; ...
+                        'VBat'; ...
+                        'CheckSum'};
+                    obj.ByteGroups = { ...
+                        0; ... % HeaderByte
+                        1; ... % PacketType
+                        [2;3]; ... % ProgrNum
+                        [4;5]; ... % AccX
+                        [6;7]; ... % AccY
+                        [8;9]; ... % AccZ
+                        [10;11]; ... % GyrX
+                        [12;13]; ... % GyrY
+                        [14;15]; ... % GyrZ
+                        [16;17]; ... % MagX
+                        [18;19]; ... % MagY
+                        [20;21]; ... % MagZ
+                        [22;23]; ... % Q0
+                        [24;25]; ... % Q1
+                        [26;27]; ... % Q2
+                        [28;29]; ... % Q3
+                        [30;31]; ... % VBat
+                        32}; % CheckSum
+                    obj.ByteTypes = { ...
+                        'uint8'; ... % HeaderByte
+                        'uint8'; ... % PacketType
+                        'uint16'; ... % ProgrNum
+                        'int16'; ... % AccX
+                        'int16'; ... % AccY
+                        'int16'; ... % AccZ
+                        'int16'; ... % GyrX
+                        'int16'; ... % GyrY
+                        'int16'; ... % GyrZ
+                        'int16'; ... % MagX
+                        'int16'; ... % MagY
+                        'int16'; ... % MagZ
+                        'int16'; ... % Q0
+                        'int16'; ... % Q1
+                        'int16'; ... % Q2
+                        'int16'; ... % Q3
+                        'uint16'; ... % VBat
+                        'uint8'}; % CheckSum
+                    obj.Multiplier = [ ...
+                        1; ... % HeaderByte
+                        1; ... % PacketType
+                        1; ... % ProgrNum
+                        obj.Ka; ... % AccX
+                        obj.Ka; ... % AccY
+                        obj.Ka; ... % AccZ
+                        obj.Kg; ... % GyrX
+                        obj.Kg; ... % GyrY
+                        obj.Kg; ... % GyrZ
+                        obj.Km; ... % MagX
+                        obj.Km; ... % MagY
+                        obj.Km; ... % MagZ
+                        obj.Qn; ... % Q0
+                        obj.Qn; ... % Q1
+                        obj.Qn; ... % Q2
+                        obj.Qn; ... % Q3
+                        1; ... % VBat
+                        1]; % CheckSum
+                    
+                    obj.DataNumber = size(obj.DataNames,1);
+                    obj.PacketSize = sum(cellfun(@numel,obj.ByteGroups));
+                    obj.BufferSize = obj.PacketsBuffered * obj.PacketSize;
                 otherwise
                     error('Exel:set:notSupportedPacketName', ...
                         '''%s'' PacketName still not supported.', ...
@@ -96,12 +219,16 @@ if isprop(obj,PropertyName)
             mustBeNumeric(PropertyValue)
             mustBeMember(PropertyValue,[2,4,8,16])
             obj.AccFullScale = PropertyValue;
+            obj.Ka = obj.AccFullScale / 32768;
+            set(obj,'PacketName',get(obj,'PacketName'))
             
         case 'GyrFullScale'
             % validating GyrFullSCale
             mustBeNumeric(PropertyValue)
             mustBeMember(PropertyValue,[250,500,1000,2000])
             obj.AccFullScale = PropertyValue;
+            obj.Kg = obj.GyrFullScale / 32768;
+            set(obj,'PacketName',get(obj,'PacketName'))
             
         case 'SamplingFrequency'
             % validating SamplingFrequency
