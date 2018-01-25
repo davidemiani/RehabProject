@@ -8,7 +8,7 @@
 pulisci
 
 % loading a valid file from acquisition dir
-load(fullfile(pwd,'2018-01-21','NS00_01.mat'))
+load(fullfile(pwd,'2018-01-22','NS00_02.mat'))
 
 % getting sampling frequency and computing period
 sf = obj(1,1).SamplingFrequency;
@@ -66,7 +66,7 @@ times = (falls-rises)*t0;
 times_ok_ind = (times>time_th)'; % col array
 rises_ok_ind = rises(1,times_ok_ind)';
 falls_ok_ind = falls(1,times_ok_ind)';
-times = (times(times_ok_ind)'./60); % converion from s to min
+times = times(times_ok_ind)'./60; % converion from s to min
 
 % creating ISO table
 ISO = array2table(zeros(1,6),'VariableNames', ...
