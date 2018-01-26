@@ -50,5 +50,16 @@ if strcmp(obj.Segment,'Thorax')
     if obj.UserData.isHomerRight == false
         angle(ind_FrontalRotation,1) = -angle(ind_FrontalRotation,1);
     end
-end
+elseif strcmp(obj.Segment,'Homer')
+    ind_AccXGreaterThanAccZ = abs(A(:,1))>abs(A(:,3));
+    ind_AccZGreaterThanAccX = not(ind_AccXGreaterThanZ);
+    ind_AccXSmallerThan0 = A(:,1)<0;
+    ind_AccZSmallerThan0 = A(:,3)<0;
+    
+    ind_ToChange1 = ind_AccZGreaterThanAccX & ind_AccZSmallerThan0;
+    ind_ToChange2 = ind_AccXGreaterThanAccZ & ind_AccXSmallerThan0;
+    
+    angle(ind_ToChange1,1) = -angle(ind_ToChange1,1);
+    angle(ind_ToChange2,1) = -angle(ind_ToChange2,1);
+end 
 end
