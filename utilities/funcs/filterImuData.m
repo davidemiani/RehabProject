@@ -34,9 +34,9 @@ Gs = 100;
 %% FILTERING
 %%
 % filtering the signal, with zero-phase shifting
-ImuData(:,1) = filtfilt( Bbutter, Abutter, ImuData(:,1) );
-ImuData(:,2) = filtfilt( Bbutter, Abutter, ImuData(:,2) );
-ImuData(:,3) = filtfilt( Bbutter, Abutter, ImuData(:,3) );
+for j = 1:size(ImuData,2)
+    ImuData(:,j) = filtfilt( Bbutter, Abutter, ImuData(:,j) );
+end
 
 
 end
