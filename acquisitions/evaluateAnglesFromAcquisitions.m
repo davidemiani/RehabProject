@@ -4,16 +4,30 @@ close all
 clc
 
 %% INIT
-date = {'2018-01-29'}; % set date(s) of acquisition
-%subjects = {'NS00'}; % set subject(s) code
-%acqNumber = {'01', '02', '03', '04', '05', '06', '07', '08', '09', '10', ...
-%    '11', '12', '13', '14', '15', '16', '17', '18', '19'};
+date = {'2018-01-29'}; 
 
-%% EVALUATE ANGLES
+%% GET ACQUISITIONS PATHS
 paths = [];
 for i = 1:numel(date)
     [~,tempPaths] = files2cell(fullfile(csd,date{1}),'.mat');
     paths = [paths; tempPaths];
 end
 
-% DA FINIRE
+%% EVALUATE ANGLES
+homerAngles = cell(size(paths));
+thoraxAngles = cell(size(paths));
+jointAngles = cell(size(paths));
+meanJointAngles = NaN(size(paths));
+sdJointAngles = NaN(size(paths));
+for i = 1:numel(paths)
+    load(paths{i, 1}); % load acquisition
+    tempHomerAngles = projection2(obj(1, 1)); % evaluate homer angles
+    tempThoraxAngles = projection2(obj(2, 1)); % evaluate thorax angles
+    minLength = min([length(tempHomerAngles), length(tempThoraxAngles)]); % get min length (in case of data loss)
+    
+    jointAngles{i} = tempHomerAngles(1:minLength) + tempThoraxAngles(1:minLength); % evaluate joint angle
+    homerAngles{i} = tempHomerAngles; % save in a variable
+    thoraxAngles{i} = tempThoraxAngles; % save in a variable
+    meanJointAngles(i) = mean(jointAngles{i}); % save mean joint angle
+    sdJointAngles(i) = std(jointAngles{i}); % save sd joint angle
+end
