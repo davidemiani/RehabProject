@@ -58,6 +58,7 @@ end
 legend('measured', 'real')
 
 %% PLOTTO IMMAGINI
+figure
 for i = 1:numel(cartelleAcquisizioni)
     % load images
     [~,imPaths] = files2cell(fullfile(csd,cartelleAcquisizioni{i}, 'ImmaginiPosizioniValutate'),'.png');
@@ -73,5 +74,13 @@ for i = 1:numel(imPaths)
     subplot(rowsSubplot, colsSubplot, i)
     imshow(im)
     colormap(map)
-    title(['Immagine ' num2str(i)])
+%     plot(jointAngles{i})
+%     hold on
+%     plot(1:numel(jointAngles{i}), ones(1, numel(jointAngles{i}))*realAngles(i))
+%     hold off
+%     ylim([-180 180])
+%     title(['RealAng: ' num2str(realAngles(i)) newline ...
+%         'MeanAbsError: ' num2str(meanError(i)) newline ...
+%         ' SD: ' num2str(sdJointAngles(i))])
 end
+%legend('measured', 'real')
