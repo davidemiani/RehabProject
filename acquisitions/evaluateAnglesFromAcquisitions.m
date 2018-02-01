@@ -5,7 +5,7 @@ clc
 
 %% INIT
 cartelleAcquisizioni = {'PosizioniPossibiliGiorgio'};
-funzioneEval = @projection;
+funzioneEval = @sagittal2;
 
 %% GET ACQUISITIONS PATHS
 paths = [];
@@ -37,7 +37,7 @@ for i = 1:numel(paths)
 end
 
 
-%% PLOTTING
+%% PLOTTING DATA
 realAngles = [0; 0; 0; 0; 0; 0; 45; 90; 135; 180; 30; 45; 90; 30; 60; 45; 90; 135; 180; 45; 90; 120; 45; 90; 30; 75];
 meanError = abs(meanJointAngles - realAngles);
 rowsSubplot = 4;
