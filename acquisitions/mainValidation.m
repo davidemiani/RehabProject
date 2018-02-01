@@ -17,11 +17,11 @@ omega_th = 10;
 Afull = evalAnglesFromAcquisition(cartelleAcquisizioni, funzioneEval);
 
 % rimuovo le acquisizioni veloci
-A.joint = Afull.joint([1:4 7,8]);
-A.homer = Afull.homer([1:4 7,8]);
-A.thorax = Afull.thorax([1:4 7,8]);
-A.meanJoint = Afull.meanJoint([1:4 7,8]);
-A.sdJoint = Afull.sdJoint([1:4 7,8]);
+A.joint = Afull.joint([1,2 5:8]);
+A.homer = Afull.homer([1,2 5:8]);
+A.thorax = Afull.thorax([1,2 5:8]);
+A.meanJoint = Afull.meanJoint([1,2 5:8]);
+A.sdJoint = Afull.sdJoint([1,2 5:8]);
 
 
 %% CLEANING DATA FROM JUMP
@@ -75,11 +75,10 @@ hold on
 plot(inds, p, '*');
 hold off
 
-jointAnglesNoJump{3} = A.joint{3}(inds(end-1):inds(end));
+jointAnglesNoJump{3} = A.joint{3}(inds(5):inds(6));
 
 figure
 plot(jointAnglesNoJump{3})
-title('Franco')
 
 % 4. FP94_02
 [p, inds] = findpeaks(A.joint{4}, 'MinPeakHeight', 150);
@@ -90,7 +89,7 @@ hold on
 plot(inds, p, '*');
 hold off
 
-jointAnglesNoJump{4} = A.joint{4}(inds(end-2):inds(end-1));
+jointAnglesNoJump{4} = A.joint{4}(inds(2):inds(3));
 
 figure
 plot(jointAnglesNoJump{4})
@@ -203,6 +202,7 @@ end
 %% CREATE VECTOR OF GOLD STANDARD ANGLES (KINOVEA)
 AnglesGS.(acquisitions{1}) = [114; 99; 40; 114; 40; 99; 40; 114; 40; 99; 40; 114; 40; 114; 40; 40; 114; 40; 40; 114];
 AnglesGS.(acquisitions{2}) = [32; 103; 130; 103; 32; 103; 130; 103; 32; 103; 130; 103; 32; 103; 130; 103; 32; 103; 130; 103; 32; 103; 130; 103; 32];
-AngleaGS.(acquisitions{3}) = [48; 82; 48; ];
+AnglesGS.(acquisitions{3}) = [41; 79; 41; 85; 41; 79; 41; 85; 41; 79; 41; 85; 41; 41; 85; 41; 79; 41; 85; 41];
+AnglesGS.(acquisitions{4}) = [37; 72; 109; 72; 37; 72; 109; 72; 37; 72; 109; 37; 109; 72; 109; 72; 37; 72; 109; 72; 37];
 AnglesGS.(acquisitions{5}) = [46; 75; 46; 87; 46; 75; 46; 87; 46; 75; 46; 87; 46; 75; 46; 87; 46; 75; 46; 87; 46; 75];
 AnglesGS.(acquisitions{6}) = [25; 72; 105; 72; 25; 72; 105; 72; 25; 72; 105; 72; 25; 72; 105; 72; 25; 72; 105; 72; 25; 72; 105];
