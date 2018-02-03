@@ -1,0 +1,24 @@
+Lo script MainPostAquisition carica un file mat, acquisizione dai sensori Exel.
+Lo scopo è quello di preparare il file al post processing. 
+
+Innanzitutto, poichè ProgrNum va da 0 a 9999 e poi ricomincia la numerazione, lo script riscrive ProgrNum in modo che vada da 0 a Nsamples-1, 
+mantenendo i gap relativi a pacchetti persi.
+Segue poi il controllo sui pacchetti persi, che restituisce una tabella MissingPacketsReport, che informa su:
+- nome sensore
+- nome segmento corporeo 
+- se se ha perso pacchetti
+- se ProgrNum inizia con zero, se no il sensore ha perso pacchetti all'inizio
+- numero, percentuale e tempo corrispondente di campioni mancanti
+- per ogni intervallo mancante, l'ultimo ProgrNum prima della perdita, il numero di campioni persi in quell'intervallo e il tempo corrispondente.
+Inoltre nella Command Window compare un messaggio se sono stati persi o no pacchetti, e un grafico dà un'idea immediata della situazione.
+
+In seguito, per ogni intervallo, si vanno ad aggiungere le righe mancanti, prima ponendo tutto a zero, poi inserendo i ProgrNum mancanti, i Vbat e la modalità, 
+poi i dati utili. Questi vengono interpolati usando gli estremi noti, se il numero di campioni persi per quell'intervallo è < di un numero intero prestabilito (200), mentre vengono posti a nan se >.
+
+Una volta riordinati, i due sensori vengono sincronizzati, poichè da un lato è possibile che vengano persi pacchetti all'inizio, 
+dall'altro che il tempo che intercorre tra il primo pacchetto relativo al primo sensore e quello relativo al secondo sensore sia eccessivo (= maggiore di Ts).
+Sfrutto la proprietà StartTime dell'oggetto per capire quando un sensore inizia ad inviare pacchetti. Guardo quale ha iniziato più tardi ed elimino i primi campioni dell'altro in modo che siano sincronizzati a meno di un Ts. 
+
+Infine, perchè i due ExelData abbiano la stessa lunghezza, tolgo i campioni in eccesso nella tabella più lunga.
+
+
