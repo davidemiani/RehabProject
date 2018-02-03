@@ -8,7 +8,7 @@
 pulisci
 
 % loading a valid file from acquisition dir
-load(fullfile(pwd,'2018-01-22','NS00_02.mat'))
+load(fullfile(pwd,'2018-01-31','CM94_01.mat'))
 
 % getting sampling frequency and computing period
 sf = obj(1,1).SamplingFrequency;
@@ -37,6 +37,8 @@ theta_thx = theta_thx(1:h,1);
 % computing joint angle as a sum of the two above
 theta = theta_hum + theta_thx;
 
+%time
+t = (0:t0:(h-1)*t0)';
 
 %% ISO CHART
 %%
@@ -67,6 +69,28 @@ times_ok_ind = (times>time_th)'; % col array
 rises_ok_ind = rises(1,times_ok_ind)';
 falls_ok_ind = falls(1,times_ok_ind)';
 times = times(times_ok_ind)'./60; % converion from s to min
+
+%plot theta, omega with rises and falls
+figure('Position',get(0,'ScreenSize'))
+subplot(2,1,1), plot(t,theta,'k','LineWidth',1.2);
+xlabel('time (sec)');
+ylabel('angle joint (deg)');
+set(gca,'FontSize',25)
+subplot(2,1,2),plot(t(rises_ok_ind),omega(rises_ok_ind),'o',...
+    'MarkerSize',7,...
+    'MarkerEdgeColor','g',...
+    'MarkerFaceColor','g');
+hold on
+plot(t(falls_ok_ind),omega(falls_ok_ind),'o',...
+    'MarkerSize',7,...
+    'MarkerEdgeColor','r',...
+    'MarkerFaceColor','r');
+plot(t,omega,'k','LineWidth',1.2);
+xlabel('time (sec)');
+ylabel('angular velocity (deg/sec)');
+ylim([-500 500])
+legend('rises','falls')
+set(gca,'FontSize',25)
 
 % creating ISO table
 ISO = array2table(zeros(1,6),'VariableNames', ...
