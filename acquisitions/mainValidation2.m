@@ -5,7 +5,7 @@ clc
 
 %% INIT
 cartelleAcquisizioni = {'2018-01-31', '2018-02-01'};
-funzioneEval = @projection;
+funzioneEval = @projection2;
 
 % parameters
 sf = 50;
@@ -61,7 +61,7 @@ hold on
 plot(inds, p, '*');
 hold off
 
-jointAnglesNoJump{2} = A.joint{2}(inds(end-1):inds(end));
+jointAnglesNoJump{2} = A.joint{2}(inds(end):end);
 
 figure
 plot(jointAnglesNoJump{2})
@@ -75,7 +75,7 @@ hold on
 plot(inds, p, '*');
 hold off
 
-jointAnglesNoJump{3} = A.joint{3}(inds(5):inds(6));
+jointAnglesNoJump{3} = A.joint{3}(inds(2):inds(3));
 
 figure
 plot(jointAnglesNoJump{3})
@@ -207,21 +207,21 @@ AnglesGS.(acquisitions{4}) = [37; 72; 109; 72; 37; 72; 109; 72; 37; 72; 109; 37;
 AnglesGS.(acquisitions{5}) = [46; 75; 46; 87; 46; 75; 46; 87; 46; 75; 46; 87; 46; 75; 46; 87; 46; 75; 46; 87; 46; 75];
 AnglesGS.(acquisitions{6}) = [25; 72; 105; 72; 25; 72; 105; 72; 25; 72; 105; 72; 25; 72; 105; 72; 25; 72; 105; 72; 25; 72; 105];
 
-%% BLAND ALTMAN
-% Piano sagittale
-titolo='Sagittale';
-Vett1=[AnglesStatics.(acquisitions{1}); AnglesStatics.(acquisitions{3}); AnglesStatics.(acquisitions{5})];
-Vett2=[AnglesGS.(acquisitions{1}); AnglesGS.(acquisitions{3}); AnglesGS.(acquisitions{5})];
-BlandAltman(Vett1,Vett2,titolo)
-
-% Piano Frontale
-titolo='Frontale';
-Vett1=[AnglesStatics.(acquisitions{2}); AnglesStatics.(acquisitions{4}); AnglesStatics.(acquisitions{6})];
-Vett2=[AnglesGS.(acquisitions{2}); AnglesGS.(acquisitions{4}); AnglesGS.(acquisitions{6})];
-BlandAltman(Vett1,Vett2,titolo)
-
-% Complessivo
-titolo='Complessivo';
-Vett1=[AnglesStatics.(acquisitions{1}); AnglesStatics.(acquisitions{2}); AnglesStatics.(acquisitions{3}); AnglesStatics.(acquisitions{4}); AnglesStatics.(acquisitions{5}); AnglesStatics.(acquisitions{6})];
-Vett2=[AnglesGS.(acquisitions{1}); AnglesGS.(acquisitions{2}); AnglesGS.(acquisitions{3}); AnglesGS.(acquisitions{4}); AnglesGS.(acquisitions{5}); AnglesGS.(acquisitions{6})];
-BlandAltman(Vett1,Vett2,titolo)
+% %% BLAND ALTMAN
+% % Piano sagittale
+% titolo='Sagittale';
+% Vett1=[AnglesStatics.(acquisitions{1}); AnglesStatics.(acquisitions{3}); AnglesStatics.(acquisitions{5})];
+% Vett2=[AnglesGS.(acquisitions{1}); AnglesGS.(acquisitions{3}); AnglesGS.(acquisitions{5})];
+% BlandAltman(Vett1,Vett2,titolo)
+% 
+% % Piano Frontale
+% titolo='Frontale';
+% Vett1=[AnglesStatics.(acquisitions{2}); AnglesStatics.(acquisitions{4}); AnglesStatics.(acquisitions{6})];
+% Vett2=[AnglesGS.(acquisitions{2}); AnglesGS.(acquisitions{4}); AnglesGS.(acquisitions{6})];
+% BlandAltman(Vett1,Vett2,titolo)
+% 
+% % Complessivo
+% titolo='Complessivo';
+% Vett1=[AnglesStatics.(acquisitions{1}); AnglesStatics.(acquisitions{2}); AnglesStatics.(acquisitions{3}); AnglesStatics.(acquisitions{4}); AnglesStatics.(acquisitions{5}); AnglesStatics.(acquisitions{6})];
+% Vett2=[AnglesGS.(acquisitions{1}); AnglesGS.(acquisitions{2}); AnglesGS.(acquisitions{3}); AnglesGS.(acquisitions{4}); AnglesGS.(acquisitions{5}); AnglesGS.(acquisitions{6})];
+% BlandAltman(Vett1,Vett2,titolo)

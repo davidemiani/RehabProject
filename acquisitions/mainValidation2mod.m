@@ -5,7 +5,7 @@ clc
 
 %% INIT
 cartelleAcquisizioni = {'2018-01-31', '2018-02-01'};
-funzioneEval = @projection;
+funzioneEval = @projection2mod;
 
 % parameters
 sf = 50;
@@ -47,7 +47,7 @@ hold on
 plot(inds, p, '*');
 hold off
 
-jointAnglesNoJump{1} = A.joint{1}(inds(end-1):inds(end));
+jointAnglesNoJump{1} = A.joint{1}(inds(1):inds(end));
 
 figure
 plot(jointAnglesNoJump{1})
@@ -61,7 +61,7 @@ hold on
 plot(inds, p, '*');
 hold off
 
-jointAnglesNoJump{2} = A.joint{2}(inds(end-1):inds(end));
+jointAnglesNoJump{2} = A.joint{2}(inds(2):end);
 
 figure
 plot(jointAnglesNoJump{2})
@@ -75,7 +75,7 @@ hold on
 plot(inds, p, '*');
 hold off
 
-jointAnglesNoJump{3} = A.joint{3}(inds(5):inds(6));
+jointAnglesNoJump{3} = A.joint{3}(inds(2):inds(3));
 
 figure
 plot(jointAnglesNoJump{3})
@@ -89,7 +89,7 @@ hold on
 plot(inds, p, '*');
 hold off
 
-jointAnglesNoJump{4} = A.joint{4}(inds(2):inds(end-1));
+jointAnglesNoJump{4} = A.joint{4}(inds(2):end);
 
 figure
 plot(jointAnglesNoJump{4})

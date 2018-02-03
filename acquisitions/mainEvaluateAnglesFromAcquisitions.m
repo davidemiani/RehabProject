@@ -4,29 +4,29 @@ close all
 clc
 
 %% INIT
-cartelleAcquisizioni = {'2018-01-31', '2018-02-01'};
-funzioneEval = @projection;
+cartelleAcquisizioni = {'PosizioniPossibiliGiorgio'};
+funzioneEval = @projection2mod;
 
 A = evalAnglesFromAcquisition(cartelleAcquisizioni, funzioneEval);
 
 
 %% PLOTTING DATA
 realAngles = [0; 0; 0; 0; 0; 0; 45; 90; 135; 180; 30; 45; 90; 30; 60; 45; 90; 135; 180; 45; 90; 120; 45; 90; 30; 75];
-meanError = abs(meanJointAngles - realAngles);
+meanError = abs(A.meanJoint - realAngles);
 rowsSubplot = 4;
 colsSubplot = 7;
 
 figure
-for i = 1:numel(paths)
+for i = 1:26
     subplot(rowsSubplot, colsSubplot, i)
-    plot(jointAngles{i})
+    plot(A.joint{i})
     hold on
-    plot(1:numel(jointAngles{i}), ones(1, numel(jointAngles{i}))*realAngles(i))
+    plot(1:numel(A.joint{i}), ones(1, numel(A.joint{i}))*realAngles(i))
     hold off
     ylim([-180 180])
     title(['RealAng: ' num2str(realAngles(i)) newline ...
         'MeanAbsError: ' num2str(meanError(i)) newline ...
-        ' SD: ' num2str(sdJointAngles(i))])
+        ' SD: ' num2str(A.sdJoint(i))])
 end
 legend('measured', 'real')
 
