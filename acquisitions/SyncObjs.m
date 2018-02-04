@@ -1,41 +1,40 @@
+function  [obj,MissingPacketsReport] = SyncObjs(obj,MaxforInterp) 
 %% MISSING PACKETS MANAGEMENT
 %%
-pulisci
-%% loading 
-acqdir = cd;
-cd(fullfile(cd,'PosizioniPossibiliGiorgio'));  %data directory
-load('NS00_20.mat');            %data file
-cd(acqdir);
+Nobjs = numel(obj);
+Ts = 1/obj(1,1).SamplingFrequency;
 
-Nobjs = numel(obj); %2
-Ts = 1/obj(1,1).SamplingFrequency
+if nargin == 1 || Nobjs == 1
+    MaxforInterp = 0;
+end
 
-objold = obj;
+%% ProgrNum sorting and Missing Packets Checking 
+%as ProgrNum ranges from 0 to 9999, than the counter restarts
 
-% 
-% figure,plot(obj(1,1).ExelData{:,3});
-% figure,plot(obj(2,1).ExelData{:,3});
-%% sorting ProgrNum and Missing Packets Checking 
-%as ProgrNum goes from 0 to 9999, than the counter restarts
 for i = 1:Nobjs
     if height(obj(i,1).ExelData)>10000
         obj(i,1).ExelData.ProgrNum = ProgrNumSorting(obj(i,1).ExelData.ProgrNum);
     end
     MissingPacketsReport(i,1) = CheckMissPack(obj(i,1));
 end
-pause
+
 %% adding rows
 for i = 1:Nobjs
-    MaxforInterp = 0;
     if MissingPacketsReport(i,1).ismiss
-        obj(i,1).ExelData = AddMissRow(MissingPacketsReport(i,1),obj(i,1).ExelData,MaxforInterp,obj(i,1).PacketName);
+        obj(i,1).ExelData = AddMissRow(...
+            MissingPacketsReport(i,1),obj(i,1).ExelData,MaxforInterp,obj(i,1).PacketName);
     end
 end
 
+ %% final checking
+% for i = 1:Nobjs
+%     MissingPacketsReport(i,1) = CheckMissPack(obj(i,1));
+% end
 
-%% synchronization 
+%% synchronization and equal length setting
 if Nobjs>1
     for i = 1:Nobjs
+        hobj(i) = height(obj(i,1).ExelData);
         %seconds of each datetime considering the time lag between start function and the first packet,too
         DataStart(i,1) = second(obj(i,1).StartTime) + Ts*obj(i,1).ExelData.ProgrNum(1);
     end
@@ -56,28 +55,27 @@ if Nobjs>1
                 obj(i,1).ExelData.ProgrNum - samplesToLastObj(i);
         end
     end
+    
+    if nnz(diff(hobj))>0
+        %looking for the shorter obj
+        [~,shorterObj] = min(hobj);
+        %deleting the longer objs in excess samples
+        for i = 1:Nobjs
+            obj(i,1).ExelData = obj(i,1).ExelData(1:hobj(shorterObj),:);
+        end
+    end
+    
 end
- %% final checking
-% for i = 1:Nobjs
-%     MissingPacketsReport(i,1) = CheckMissPack(obj(i,1));
-% end
-% %pause
-
-%% setting the same objs height
-
-% figure,plot(obj(1,1).ExelData{:,3});
-% figure,plot(obj(2,1).ExelData{:,3});
-h1 = height(obj(1,1).ExelData);
-h2 = height(obj(2,1).ExelData);
-
-%if there are only two objs
-if ~isequal(h1,h2)
-    %computing the longer obj
-    [~,longerObj] = max([h1,h2]);
-    %deleting the longer obj in excess samples
-    obj(longerObj,1).ExelData = obj(longerObj,1).ExelData(1:min(h1,h2),:);
+pause(1)
+plotAcc = menu('Syncronization Complete! Do you want Matlab to show you the new Acc vectors?','Yes','No');
+if plotAcc == 1
+    for i = 1:Nobjs
+        figure
+        subplot(311),plot(obj(i,1).ExelData{:,3}),title([obj(i,1).Segment,' AccX']);
+        subplot(312),plot(obj(i,1).ExelData{:,4}),title([obj(i,1).Segment,' AccY']);
+        subplot(313),plot(obj(i,1).ExelData{:,5}),title([obj(i,1).Segment,' AccZ']);
+    end
 end
-
 
 
 function vProgr = ProgrNumSorting(v)
@@ -257,7 +255,7 @@ end
 
 
 
-
+end
 
 
 
