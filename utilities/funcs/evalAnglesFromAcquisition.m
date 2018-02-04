@@ -23,13 +23,16 @@ jointAngles = cell(size(paths));
 meanJointAngles = NaN(size(paths));
 sdJointAngles = NaN(size(paths));
 for i = 1:numel(paths)
+    i
     load(paths{i, 1}); % load acquisition
-    [obj,missingPacketsReport] = synchronize(obj,0,1); % synchronizing objects 
+    [obj,missingPacketsReport] = synchronize(obj,100,0); % synchronizing objects 
     tempHomerAngles = funzioneEval(obj(1, 1)); % evaluate homer angles
     tempThoraxAngles = funzioneEval(obj(2, 1)); % evaluate thorax angles
     %minLength = min([length(tempHomerAngles), length(tempThoraxAngles)]); % get min length (in case of data loss)
     
-    jointAngles{i} = tempHomerAngles(1:minLength) + tempThoraxAngles(1:minLength); % evaluate joint angle
+    %jointAngles{i} = tempHomerAngles(1:minLength) + tempThoraxAngles(1:minLength); % evaluate joint angle
+    jointAngles{i} = tempHomerAngles + tempThoraxAngles; % evaluate joint angle
+    
     homerAngles{i} = tempHomerAngles; % save in a variable
     thoraxAngles{i} = tempThoraxAngles; % save in a variable
     meanJointAngles(i) = mean(jointAngles{i}); % save mean joint angle

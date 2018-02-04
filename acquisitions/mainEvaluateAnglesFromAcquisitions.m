@@ -5,7 +5,7 @@ clc
 
 %% INIT
 cartelleAcquisizioni = {'PosizioniPossibiliGiorgio'};
-funzioneEval = @projection2mod;
+funzioneEval = @projection;
 
 A = evalAnglesFromAcquisition(cartelleAcquisizioni, funzioneEval);
 
@@ -24,8 +24,9 @@ for i = 1:26
     plot(1:numel(A.joint{i}), ones(1, numel(A.joint{i}))*realAngles(i))
     hold off
     ylim([-180 180])
+    xlim([0 500])
     title(['RealAng: ' num2str(realAngles(i)) newline ...
-        'MeanAbsError: ' num2str(meanError(i)) newline ...
+        'MeanAbsErr: ' num2str(meanError(i)) newline ...
         ' SD: ' num2str(A.sdJoint(i))])
 end
 legend('measured', 'real')

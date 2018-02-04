@@ -8,7 +8,7 @@
 pulisci
 
 % loading a valid file from acquisition dir
-load(fullfile(pwd,'2018-02-01','FP94_02.mat'))
+load(fullfile(pwd,'2018-01-31','CM94_01.mat'))
 
 % getting sampling frequency and computing period
 sf = obj(1,1).SamplingFrequency;
@@ -22,12 +22,12 @@ time_th = 4; % s
 %% COMPUTING JOINT ANGLE
 %%
 % synchronizing objects 
-[obj,missingPacketsReport] = synchronize(obj,100,1); 
-
+[obj,missingPacketsReport] = synchronize(obj,0,1); 
+h = numel
 % computing angles with projection algorithm
 theta_hum = filterImuData(projection(obj(1,1)),sf);
 theta_thx = filterImuData(projection(obj(2,1)),sf);
-h = numel(theta_hum);
+
 % % getting smallest dimension and cutting angles
 %h = min(numel(theta_hum),numel(theta_thx));
 % theta_hum = theta_hum(1:h,1);

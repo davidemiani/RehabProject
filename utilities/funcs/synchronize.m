@@ -35,10 +35,8 @@ end
 %% SYNCHRONIZATION AND EQUALIZING LENGTHS
 %%
 if Nobjs>1
-    hobj = zeros(1,Nobjs);
     DataStart = zeros(Nobjs,1);
     for j = 1:Nobjs
-        hobj(j) = height(obj(j,1).ExelData);
         %seconds of each datetime considering the time lag between start function and the first packet,too
         DataStart(j,1) = second(obj(j,1).StartTime) + Ts*obj(j,1).ExelData.ProgrNum(1);
     end
@@ -60,6 +58,11 @@ if Nobjs>1
         end
     end
     
+    hobj = zeros(1,Nobjs);
+    for j = 1:Nobjs
+        hobj(j) = height(obj(j,1).ExelData);
+    end
+
     if nnz(diff(hobj))>0
         %looking for the shorter obj
         [~,shorterObj] = min(hobj);
