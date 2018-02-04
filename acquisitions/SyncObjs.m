@@ -4,39 +4,43 @@ function  [obj,MissingPacketsReport] = SyncObjs(obj,MaxforInterp,plotAcc)
 Nobjs = numel(obj);
 Ts = 1/obj(1,1).SamplingFrequency;
 
-if nargin == 1 || Nobjs == 1
+if isempty(MaxforInterp) || Nobjs == 1
     MaxforInterp = 0;
 end
 
 %% ProgrNum sorting and Missing Packets Checking 
 %as ProgrNum ranges from 0 to 9999, than the counter restarts
 
-for i = 1:Nobjs
-    if height(obj(i,1).ExelData)>10000
-        obj(i,1).ExelData.ProgrNum = ProgrNumSorting(obj(i,1).ExelData.ProgrNum);
+for j = 1:Nobjs
+    if height(obj(j,1).ExelData)>10000
+        obj(j,1).ExelData.ProgrNum = ProgrNumSorting(obj(j,1).ExelData.ProgrNum);
     end
-    MissingPacketsReport(i,1) = CheckMissPack(obj(i,1));
+    MissingPacketsReport(j,1) = CheckMissPack(obj(j,1));
 end
 
 %% adding rows
-for i = 1:Nobjs
-    if MissingPacketsReport(i,1).ismiss
-        obj(i,1).ExelData = AddMissRow(...
-            MissingPacketsReport(i,1),obj(i,1).ExelData,MaxforInterp,obj(i,1).PacketName);
+for j = 1:Nobjs
+    if MissingPacketsReport(j,1).ismiss
+        obj(j,1).ExelData = AddMissRow(...
+            MissingPacketsReport(j,1),obj(j,1).ExelData,MaxforInterp,obj(j,1).PacketName);
     end
 end
 
  %% final checking
-% for i = 1:Nobjs
-%     MissingPacketsReport(i,1) = CheckMissPack(obj(i,1));
+% for j = 1:Nobjs
+%     MissingPacketsReport(j,1) = CheckMissPack(obj(j,1));
 % end
 
-%% synchronization and equal length setting
+
+%% SYNCHRONIZATION AND EQUALIZING LENGTHS
+%%
 if Nobjs>1
-    for i = 1:Nobjs
-        hobj(i) = height(obj(i,1).ExelData);
+    hobj = zeros(1,Nobjs);
+    DataStart = zeros(Nobjs,1);
+    for j = 1:Nobjs
+        hobj(j) = height(obj(j,1).ExelData);
         %seconds of each datetime considering the time lag between start function and the first packet,too
-        DataStart(i,1) = second(obj(i,1).StartTime) + Ts*obj(i,1).ExelData.ProgrNum(1);
+        DataStart(j,1) = second(obj(j,1).StartTime) + Ts*obj(j,1).ExelData.ProgrNum(1);
     end
     
     %getting the last in time obj
@@ -49,10 +53,10 @@ if Nobjs>1
     samplesToLastObj = floor(timeToLastObj/Ts);
     
     if nnz(samplesToLastObj)
-        for i = 1:Nobjs
-            obj(i,1).ExelData = obj(i,1).ExelData(samplesToLastObj(i)+1:end,:);
-            obj(i,1).ExelData.ProgrNum = ...
-                obj(i,1).ExelData.ProgrNum - samplesToLastObj(i);
+        for j = 1:Nobjs
+            obj(j,1).ExelData = obj(j,1).ExelData(samplesToLastObj(j)+1:end,:);
+            obj(j,1).ExelData.ProgrNum = ...
+                obj(j,1).ExelData.ProgrNum - samplesToLastObj(j);
         end
     end
     
@@ -60,23 +64,24 @@ if Nobjs>1
         %looking for the shorter obj
         [~,shorterObj] = min(hobj);
         %deleting the longer objs in excess samples
-        for i = 1:Nobjs
-            obj(i,1).ExelData = obj(i,1).ExelData(1:hobj(shorterObj),:);
+        for j = 1:Nobjs
+            obj(j,1).ExelData = obj(j,1).ExelData(1:hobj(shorterObj),:);
         end
     end
     
 end
-pause(1)
+
+%% plotting
 if plotAcc
-    for i = 1:Nobjs
+    for j = 1:Nobjs
         figure
-        subplot(311),plot(obj(i,1).ExelData{:,3}),title([obj(i,1).Segment,' AccX']);
-        subplot(312),plot(obj(i,1).ExelData{:,4}),title([obj(i,1).Segment,' AccY']);
-        subplot(313),plot(obj(i,1).ExelData{:,5}),title([obj(i,1).Segment,' AccZ']);
+        subplot(311),plot(obj(j,1).ExelData{:,3}),title([obj(j,1).Segment,' AccX']);
+        subplot(312),plot(obj(j,1).ExelData{:,4}),title([obj(j,1).Segment,' AccY']);
+        subplot(313),plot(obj(j,1).ExelData{:,5}),title([obj(j,1).Segment,' AccZ']);
     end
 end
 
-
+%%
 function vProgr = ProgrNumSorting(v)
 %sorting the ProgrNum vector deleting the 0-10000 limits
 M = 9999;
@@ -99,16 +104,16 @@ if ~isempty(dneg)
     for i = 2:n_int
         Ncell = numel(vcell{i});
         
-        if vcell{i-1}(end) == M & vcell{i}(1) == 0
+        if vcell{i-1}(end) == M && vcell{i}(1) == 0
             Miss = 0;
             
-        elseif vcell{i-1}(end) == M & vcell{i}(1) > 0
+        elseif vcell{i-1}(end) == M && vcell{i}(1) > 0
             Miss = vcell{i}(1);
             
-        elseif vcell{i-1}(end) < M & vcell{i}(1) == 0
+        elseif vcell{i-1}(end) < M && vcell{i}(1) == 0
             Miss = M-vcell{i-1}(end);
             
-        elseif vcell{i-1}(end) < M & vcell{i}(1) > 0 & vcell{i-1}(end) > vcell{i}(1)
+        elseif vcell{i-1}(end) < M && vcell{i}(1) > 0 && vcell{i-1}(end) > vcell{i}(1)
             Miss = vcell{i}(1) + M-vcell{i-1}(end);
             
         elseif vcell{i-1}(end) < vcell{i}(1)
@@ -209,15 +214,13 @@ function MissingPackets = CheckMissPack(obj)
 %%
 fprintf(obj.Segment,' \n\n');
 
-Nsamples = height(obj.ExelData);
-
 MissingPackets = struct(...
         'ExelName',obj.ExelName,'Segment',obj.Segment,...
         'StartWithZero',obj.ExelData.ProgrNum(1) == 0,...
         'ismiss',false,'MissSamplesTot',0,'PercSamples',0,...
         'MissTime',0,'WhereMiss',[]);
 
-%if there are missing packets, "diff" does not give a ones vector
+%if there are missing packets, "diff" is not a ones vector
 DeltaSamples = diff(obj.ExelData.ProgrNum); 
 %DeltaSamples has Nsamples-1 values
 
@@ -232,7 +235,8 @@ if missint>0
         MissingPackets.WhereMiss = obj.ExelData.ProgrNum(DeltaSamples>1);
     else
         MissingPackets.WhereMiss = table;
-        MissingPackets.WhereMiss.CutProgrNum  = obj.ExelData.ProgrNum(DeltaSamples>1); %se find=2 vuol dire che tra il campione 2 e 3 ho perso pacchetti
+        MissingPackets.WhereMiss.CutProgrNum  = obj.ExelData.ProgrNum(DeltaSamples>1); 
+        %that is if find=2, than between 2nd and 3th samples there are missing samples
         MissingPackets.WhereMiss.SamplesNum    = DeltaSamples(DeltaSamples>1)-1;
         MissingPackets.WhereMiss.Time          = MissingPackets.WhereMiss.SamplesNum/obj.SamplingFrequency;
     end
@@ -251,6 +255,7 @@ else
 
 end
 end
+%%
 
 
 
