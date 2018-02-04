@@ -21,13 +21,9 @@ time_th = 4; % s
 
 %% COMPUTING JOINT ANGLE
 %%
-% filtering accelerations
-obj(1,1).ExelData{:,3:5} = filterImuData(obj(1,1).ExelData{:,3:5},sf);
-obj(2,1).ExelData{:,3:5} = filterImuData(obj(2,1).ExelData{:,3:5},sf);
-
-% computing absolute angles (with gravity) with projection algorithm
-theta_hum = projection(obj(1,1));
-theta_thx = projection(obj(2,1));
+% computing angles with projection algorithm
+theta_hum = filterImuData(projection(obj(1,1)),sf);
+theta_thx = filterImuData(projection(obj(2,1)),sf);
 
 % getting smallest dimension and cutting angles
 h = min(numel(theta_hum),numel(theta_thx));
@@ -37,8 +33,6 @@ theta_thx = theta_thx(1:h,1);
 % computing joint angle as a sum of the two above
 theta = theta_hum + theta_thx;
 
-%time
-t = (0:t0:(h-1)*t0)';
 
 %% ISO CHART
 %%
@@ -70,11 +64,12 @@ rises_ok_ind = rises(1,times_ok_ind)';
 falls_ok_ind = falls(1,times_ok_ind)';
 times = times(times_ok_ind)'./60; % converion from s to min
 
-%plot theta, omega with rises and falls
+% plot theta, omega with rises and falls
+t = (0:t0:(h-1)*t0)';
 figure('Position',get(0,'ScreenSize'))
 subplot(2,1,1), plot(t,theta,'k','LineWidth',1.2);
 xlabel('time (sec)');
-ylabel('angle joint (deg)');
+ylabel('joint angle (deg)');
 set(gca,'FontSize',25)
 subplot(2,1,2),plot(t(rises_ok_ind),omega(rises_ok_ind),'o',...
     'MarkerSize',7,...
@@ -93,41 +88,55 @@ legend('rises','falls')
 set(gca,'FontSize',25)
 
 % creating ISO table
-ISO = array2table(zeros(1,6),'VariableNames', ...
-    {'LessThan20','Between20and30','Between30and40', ...
-    'Between40and50','Between50and60','MoreThan60'});
+RowNames = ...
+    {'LessThan20';'Between20and30';'Between30and40'; ...
+    'Between40and50';'Between50and60';'MoreThan60'};
+VariableNames = {'TimeArray','Occurrences','TotalTime','Mean','DevStd'};
+ISO = cell2table(cell(numel(RowNames),1), ...
+    'VariableNames',VariableNames(1,1), ...
+    'RowNames',RowNames);
+ISO = [ISO,array2table(zeros(numel(RowNames),numel(VariableNames)-1), ...
+    'VariableNames', VariableNames(1,2:end), ...
+    'RowNames',RowNames)];
 
 % cycling on periods
-for j = 1:numel(times)
+for i = 1:numel(times)
     % getting current rise and fall indexes
-    cRise = rises_ok_ind(j,1);
-    cFall = falls_ok_ind(j,1);
+    cRise = rises_ok_ind(i,1);
+    cFall = falls_ok_ind(i,1);
     
     % getting current angle as the mean in this period
     % getting also current period duration
     cAngle = mean(theta(cRise:cFall));
-    cDurat = times(j,1);
+    cDurat = times(i,1);
     
-    % filling right bin
+    % determining right bin
     if cAngle < 20
-        ISO.LessThan20 = ISO.LessThan20 + cDurat;
+        cRow = 'LessThan20';
     elseif cAngle < 30
-        ISO.Between20and30 = ISO.Between20and30 + cDurat;
+        cRow = 'Between20and30';
     elseif cAngle < 40
-        ISO.Between30and40 = ISO.Between30and40 + cDurat;
+        cRow = 'Between30and40';
     elseif cAngle < 50
-        ISO.Between40and50 = ISO.Between40and50 + cDurat;
+        cRow = 'Between40and50';
     elseif cAngle < 60
-        ISO.Between50and60 = ISO.Between50and60 + cDurat;
+        cRow = 'Between50and60';
     else
-        ISO.MoreThan60 = ISO.MoreThan60 + cDurat;
+        cRow = 'MoreThan60';
     end
+    
+    % updating ISO tab
+    ISO{cRow,'TimeArray'}{1,1} = cat(1,ISO{cRow,'TimeArray'}{1,1},cDurat);
+    ISO{cRow,'Occurrences'} = ISO{cRow,'Occurrences'} + 1;
+    ISO{cRow,'TotalTime'} = ISO{cRow,'TotalTime'} + cDurat;
+    ISO{cRow,'Mean'} = mean(ISO{cRow,'TimeArray'}{1,1});
+    ISO{cRow,'DevStd'} = std(ISO{cRow,'TimeArray'}{1,1});
 end
-clear cRise cFall cAngle cFall
+clear cRise cFall cAngle cDurat cRow
 
 % creating ISOx and ISOy
-ISOx = [10,25,35,45,55,70];
-ISOy = ISO{1,:};
+ISOx = [10;25;35;45;55;70];
+ISOy = ISO.TotalTime;
 
 % computing chart max height
 h = round(max(ISOy),-1)+10;
@@ -141,15 +150,16 @@ patch([20 20 60 60],[3 0 0 1],[0 1 0],'EdgeColor','none','FaceAlpha',0.5)
 plot(ISOx,ISOy,'ok','MarkerSize',15,'MarkerFaceColor','k')
 
 % text on dots
-DISx = -[2,4,4,4,4,2];
-STR = {'\theta<20';'20\leq\theta<30';'30\leq\theta<40'; ...
-    '40\leq\theta<50';'50\leq\theta<60';'\theta\geq60'};
-for j = 1:numel(ISOx)
-    cISOx = ISOx(1,j);
-    cISOy = ISOy(1,j);
-    cDISx = DISx(1,j);
+DISx = -ones(numel(ISOx),1)*1.5;
+for i = 1:numel(ISOx)
+    cISOx = ISOx(i,1);
+    cISOy = ISOy(i,1);
+    cDISx = DISx(i,1);
+    cSTRG = {['n = ',num2str(ISO{i,'Occurrences'},2)]; ...
+        ['\mu = ',num2str(ISO{i,'Mean'},2)]; ...
+        ['\sigma = ',num2str(ISO{i,'DevStd'},2)]};
     plot(repmat(cISOx,1,2),[0,cISOy],'k','LineWidth',2)
-    text(cISOx+cDISx,cISOy+0.035*h,STR{j,1},'FontSize',25)
+    text(cISOx+cDISx,cISOy+0.065*h,cSTRG,'FontSize',25)
 end
 clear cISOx cISOy cDISx
 
@@ -179,9 +189,9 @@ p = pie(PIEdata);
 warning('on','MATLAB:pie:NonPositiveData')
 
 % some other plot stuff
-for j = 2:2:numel(p)
-    p(1,j).FontSize = 25;
-    p(1,j).Position = p(1,j).Position - p(1,j).Position*0.075;
+for i = 2:2:numel(p)
+    p(1,i).FontSize = 25;
+    p(1,i).Position = p(1,i).Position - p(1,i).Position*0.075;
 end
 title('PIE chart')
 warning('off','MATLAB:legend:IgnoringExtraEntries')

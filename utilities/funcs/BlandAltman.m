@@ -23,7 +23,7 @@ plot([min(M) max(M)],[LOA_sup LOA_sup], 'b');
 plot(M,D,'ok');
 plot([min(M) max(M)],[0 0], 'k');
 legend('LOA','Mdiff');
-title([title ' LOA = ' num2str(Mdiff) '\pm' num2str(1.96*SDdiff)]);
+title([title ' LOA = ' num2str(Mdiff,2) '\pm' num2str(1.96*SDdiff,2)]);
 
 % outputting
 if nargout > 0
