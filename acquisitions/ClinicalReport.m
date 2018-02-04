@@ -21,14 +21,17 @@ time_th = 4; % s
 
 %% COMPUTING JOINT ANGLE
 %%
+% synchronizing objects 
+[obj,missingPacketsReport] = synchronize(obj,0,1); 
+
 % computing angles with projection algorithm
 theta_hum = filterImuData(projection(obj(1,1)),sf);
 theta_thx = filterImuData(projection(obj(2,1)),sf);
 
-% getting smallest dimension and cutting angles
-h = min(numel(theta_hum),numel(theta_thx));
-theta_hum = theta_hum(1:h,1);
-theta_thx = theta_thx(1:h,1);
+% % getting smallest dimension and cutting angles
+% h = min(numel(theta_hum),numel(theta_thx));
+% theta_hum = theta_hum(1:h,1);
+% theta_thx = theta_thx(1:h,1);
 
 % computing joint angle as a sum of the two above
 theta = theta_hum + theta_thx;
