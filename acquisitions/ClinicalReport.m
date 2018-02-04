@@ -64,29 +64,6 @@ rises_ok_ind = rises(1,times_ok_ind)';
 falls_ok_ind = falls(1,times_ok_ind)';
 times = times(times_ok_ind)'./60; % converion from s to min
 
-% plot theta, omega with rises and falls
-t = (0:t0:(h-1)*t0)';
-figure('Position',get(0,'ScreenSize'))
-subplot(2,1,1), plot(t,theta,'k','LineWidth',1.2);
-xlabel('time (sec)');
-ylabel('joint angle (deg)');
-set(gca,'FontSize',25)
-subplot(2,1,2),plot(t(rises_ok_ind),omega(rises_ok_ind),'o',...
-    'MarkerSize',7,...
-    'MarkerEdgeColor','g',...
-    'MarkerFaceColor','g');
-hold on
-plot(t(falls_ok_ind),omega(falls_ok_ind),'o',...
-    'MarkerSize',7,...
-    'MarkerEdgeColor','r',...
-    'MarkerFaceColor','r');
-plot(t,omega,'k','LineWidth',1.2);
-xlabel('time (sec)');
-ylabel('angular velocity (deg/sec)');
-ylim([-500 500])
-legend('rises','falls')
-set(gca,'FontSize',25)
-
 % creating ISO table
 RowNames = ...
     {'LessThan20';'Between20and30';'Between30and40'; ...
@@ -181,7 +158,7 @@ PIEdata = [nnz(theta < 20), ...
     nnz(theta >= 20 & theta < 60), ...
     nnz(theta >= 60 & theta < 90), ...
     nnz(theta >= 90)] ./ numel(theta);
-%PIEdata(PIEdata==0) = 0.009999;
+PIEdata(PIEdata==0) = 0.009999;
 
 % plotting the pie chart
 warning('off','MATLAB:pie:NonPositiveData')
@@ -200,5 +177,38 @@ legend('\theta<20','20\leq\theta<60', ...
 warning('on','MATLAB:legend:IgnoringExtraEntries')
 text(-0.9,-1.25, ...
     'Percentage of time spent in different angle ranges','FontSize',25)
+set(gca,'FontSize',25)
+
+
+%% PLOTS FOR CECI
+%%
+% getting time
+t = (0:t0:(numel(theta)-1)*t0)';
+
+% opening a new figure
+figure('Position',get(0,'ScreenSize'))
+
+% plotting theta
+subplot(2,1,1), hold on
+plot(t,theta,'k','LineWidth',1.2)
+plot(t(rises_ok_ind),theta(rises_ok_ind), ...
+    'g^','MarkerSize',10,'MarkerFaceColor','g')
+plot(t(falls_ok_ind),theta(falls_ok_ind), ...
+    'rv','MarkerSize',10,'MarkerFaceColor','r')
+xlabel('time (sec)');
+ylabel('joint angle (deg)');
+set(gca,'FontSize',25)
+
+% plotting omega
+subplot(2,1,2), hold on
+plot(t,omega,'k','LineWidth',1.2)
+plot(t(rises_ok_ind),omega(rises_ok_ind), ...
+    'g^','MarkerSize',10,'MarkerFaceColor','g')
+plot(t(falls_ok_ind),omega(falls_ok_ind), ...
+    'rv','MarkerSize',10,'MarkerFaceColor','r')
+xlabel('time (sec)');
+ylabel('angular velocity (deg/sec)');
+ylim([-150 150])
+legend('signal','rises','falls')
 set(gca,'FontSize',25)
 
