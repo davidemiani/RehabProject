@@ -1,4 +1,4 @@
-function  [obj,MissingPacketsReport] = SyncObjs(obj,MaxforInterp,plotAcc) 
+function  [obj,MissingPacketsReport] = SyncObjs(obj,MaxforInterp,plotA) 
 %% MISSING PACKETS MANAGEMENT
 %%
 Nobjs = numel(obj);
@@ -67,7 +67,8 @@ if Nobjs>1
     
 end
 pause(1)
-if plotAcc
+plotAcc = menu('Syncronization Complete! Do you want Matlab to show you the new Acc vectors?','Yes','No');
+if plotAcc == 1
     for i = 1:Nobjs
         figure
         subplot(311),plot(obj(i,1).ExelData{:,3}),title([obj(i,1).Segment,' AccX']);

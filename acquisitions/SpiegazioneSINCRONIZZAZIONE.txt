@@ -1,5 +1,6 @@
 La funzione syncObjs prende in ingresso l'array di oggetti e un numero 
 facoltativo per stabilire quanti campioni consecutivi interpolare.
+Un terzo ingresso booleano serve per dire se si vogliono i grafici delle accelerazioni o no.
 L'uscita è costituita dall'oggetto e da una struct MissingPacketsReport che
 dice tutto dei pacchetti persi
 Lo scopo è quello di preparare il file al post processing. 
@@ -35,5 +36,7 @@ i primi campioni dell'altro in modo che siano sincronizzati a meno di un Ts.
 
 Infine, perchè gli ExelData abbiano la stessa lunghezza, tolgo i campioni
 in eccesso nelle tabelle più lunghe.
+
+Seguono gli eventuali grafici delle accelerazioni.
 
 
