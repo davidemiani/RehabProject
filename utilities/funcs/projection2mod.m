@@ -38,26 +38,24 @@ angle = acosd(dot(A,G,2)./(vecnorm(A,2,2).*vecnorm(G,2,2)));
 % Homer correction
 
 if strcmp(obj.Segment,'Homer')
+    
     if obj.UserData.isHomerRight == true
-%     ind_SagittalRotation = (abs(A(:,1))) > abs(A(:,3)); % AccX > AccZ
-%     ind_FrontalRotation = not(ind_SagittalRotation); % AccX < AccZ
-        ind_dietro_vert = A(:,1)<0; %& A(:,3)>0; %Braccio indietro rispetto alla verticale
-        ind_sx_vert = A(:,1)<0; %& A(:,3)<0; %Braccio a sx della verticale;
-    
-%     ind_SagittalToChange = ind_SagittalRotation & ind_AccXSmallerThan0;
-        angle(ind_dietro_vert,1) = -angle(ind_dietro_vert,1);
-    
-%     ind_FrontalToChange = ind_FrontalRotation & ind_AccZSmallerThan0;
-        angle(ind_sx_vert,1) = -angle(ind_sx_vert,1);
-    
+%         ind_dietro_vert = A(:,1)<0 & A(:,3)>0; %Braccio indietro rispetto alla verticale
+%         ind_sx_vert = A(:,1)<0 & A(:,3)<0; %Braccio a sx della verticale;
+%         angle(ind_dietro_vert,1) = -angle(ind_dietro_vert,1);
+%         angle(ind_sx_vert,1) = -angle(ind_sx_vert,1);
+        ind_cambio_segno = A(:,1)<0;
+        angle(ind_cambio_segno,1) = -angle(ind_cambio_segno,1);
     else
-        ind_dietro_vert = A(:,1)>0 & A(:,3)>0; %Braccio indietro rispetto alla verticale
-        ind_sx_vert = A(:,1)<0 & A(:,3)>0; %Braccio a sx della verticale;
-        angle(ind_dietro_vert,1) = -angle(ind_dietro_vert,1);
-        angle(ind_sx_vert,1) = -angle(ind_sx_vert,1);
+        ind_cambio_segno = A(:,1)>0;
+        angle(ind_cambio_segno,1) = -angle(ind_cambio_segno,1);
+%         ind_dietro_vert = A(:,1)>0 & A(:,3)>0; %Braccio indietro rispetto alla verticale
+%         ind_sx_vert = A(:,1)<0 & A(:,3)>0; %Braccio a sx della verticale;
+%         angle(ind_dietro_vert,1) = -angle(ind_dietro_vert,1);
+%         angle(ind_sx_vert,1) = -angle(ind_sx_vert,1);
     end
 end
-
+ 
 % thorax corrections
 if strcmp(obj.Segment,'Thorax')
     ind_SagittalRotation = abs(A(:,3))>abs(A(:,1));
@@ -71,7 +69,11 @@ if strcmp(obj.Segment,'Thorax')
     ind_FrontalToChange = ind_FrontalRotation & ind_AccXSmallerThan0;
     angle(ind_FrontalToChange,1) = -angle(ind_FrontalToChange,1);
     
+    if obj.UserData.isHomerRight == false
+        angle(ind_FrontalRotation,1) = -angle(ind_FrontalRotation,1);
+    end
 end
+
 
 end
 

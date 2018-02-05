@@ -4,7 +4,7 @@ close all
 clc
 
 %% INIT
-cartelleAcquisizioni = {'PosizioniPossibiliGiorgio'};
+cartelleAcquisizioni = {'26posizioni'};
 funzioneEval = @projection;
 
 A = evalAnglesFromAcquisition(cartelleAcquisizioni, funzioneEval);
