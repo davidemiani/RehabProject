@@ -22,7 +22,7 @@ time_th = 4; % s
 %% COMPUTING JOINT ANGLE
 %%
 % synchronizing objects 
-[obj,missingPacketsReport] = synchronize(obj,100,1); 
+missingPacketsReport = synchronize(obj,100,1); 
 
 % computing angles with projection algorithm
 theta_hum = filterImuData(projection(obj(1,1)),sf);

@@ -197,12 +197,14 @@ classdef Exel < handle
         set(obj,PropertyName,PropertyValue)
         reset(obj)
         
-        
         % connection and others
         connect(obj)
         disconnect(obj)
         start(obj)
         stop(obj)
+        
+        % synchronization
+        MissingPacketsReport = synchronize(obj,MaxforInterp,plotAcc)
     end
     
     methods (Access = private)

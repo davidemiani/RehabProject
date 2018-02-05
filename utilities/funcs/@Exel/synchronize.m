@@ -1,4 +1,4 @@
-function  [obj,MissingPacketsReport] = synchronize(obj,MaxforInterp,plotAcc) 
+function  MissingPacketsReport = synchronize(obj,MaxforInterp,plotAcc) 
 %% MISSING PACKETS MANAGEMENT
 %%
 Nobjs = numel(obj);

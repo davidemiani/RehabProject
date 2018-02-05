@@ -25,7 +25,7 @@ sdJointAngles = NaN(size(paths));
 for i = 1:numel(paths)
     i
     load(paths{i, 1}); % load acquisition
-    [obj,missingPacketsReport] = synchronize(obj,100,0); % synchronizing objects 
+    synchronize(obj,100,0); % synchronizing objects 
     tempHomerAngles = funzioneEval(obj(1, 1)); % evaluate homer angles
     tempThoraxAngles = funzioneEval(obj(2, 1)); % evaluate thorax angles
     %minLength = min([length(tempHomerAngles), length(tempThoraxAngles)]); % get min length (in case of data loss)

@@ -1,4 +1,4 @@
-classdef ExelCompressed
+classdef ExelCompressed < handle
     properties (SetAccess = private)
         % sensor related
         ExelName
@@ -65,6 +65,9 @@ classdef ExelCompressed
                 PropertyValue = obj.(PropertyName);
             end
         end
+        
+        % synchronization
+        MissingPacketsReport = synchronize(obj,MaxforInterp,plotAcc)
     end
     
 end
