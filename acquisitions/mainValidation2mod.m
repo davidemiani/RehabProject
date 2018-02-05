@@ -61,7 +61,7 @@ hold on
 plot(inds, p, '*');
 hold off
 
-jointAnglesNoJump{2} = A.joint{2}(inds(2):end);
+jointAnglesNoJump{2} = A.joint{2}(inds(3):inds(end));
 
 figure
 plot(jointAnglesNoJump{2})
@@ -75,7 +75,7 @@ hold on
 plot(inds, p, '*');
 hold off
 
-jointAnglesNoJump{3} = A.joint{3}(inds(2):inds(3));
+jointAnglesNoJump{3} = A.joint{3}(inds(5):inds(6));
 
 figure
 plot(jointAnglesNoJump{3})
@@ -89,7 +89,7 @@ hold on
 plot(inds, p, '*');
 hold off
 
-jointAnglesNoJump{4} = A.joint{4}(inds(2):end);
+jointAnglesNoJump{4} = A.joint{4}(inds(2):inds(3));
 
 figure
 plot(jointAnglesNoJump{4})
