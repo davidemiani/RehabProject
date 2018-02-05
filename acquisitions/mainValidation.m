@@ -39,91 +39,9 @@ end
 % initializig cell array with clean data
 jointAnglesNoJump = cell(size(A.joint));
 
-% removing signal pre/post jump
-
-% 1. CM94_01
-[p, inds] = findpeaks(A.joint{1}, 'MinPeakHeight', 150);
-
-figure
-plot(A.joint{1})
-hold on
-plot(inds, p, '*');
-hold off
-
-jointAnglesNoJump{1} = A.joint{1}(inds(end-1):inds(end));
-
-figure
-plot(jointAnglesNoJump{1})
-
-% 2. CM94_02
-[p, inds] = findpeaks(A.joint{2}, 'MinPeakHeight', 150);
-
-figure
-plot(A.joint{2})
-hold on
-plot(inds, p, '*');
-hold off
-
-jointAnglesNoJump{2} = A.joint{2}(inds(end-1):inds(end));
-
-figure
-plot(jointAnglesNoJump{2})
-
-% 3. FP94_01
-[p, inds] = findpeaks(A.joint{3}, 'MinPeakHeight', 150);
-
-figure
-plot(A.joint{3})
-hold on
-plot(inds, p, '*');
-hold off
-
-jointAnglesNoJump{3} = A.joint{3}(inds(5):inds(6));
-
-figure
-plot(jointAnglesNoJump{3})
-
-% 4. FP94_02
-[p, inds] = findpeaks(A.joint{4}, 'MinPeakHeight', 150);
-
-figure
-plot(A.joint{4})
-hold on
-plot(inds, p, '*');
-hold off
-
-jointAnglesNoJump{4} = A.joint{4}(inds(2):inds(3));
-
-figure
-plot(jointAnglesNoJump{4})
-
-% 5. GL94_01
-[p, inds] = findpeaks(A.joint{5}, 'MinPeakHeight', 150);
-
-figure
-plot(A.joint{5})
-hold on
-plot(inds, p, '*');
-hold off
-
-jointAnglesNoJump{5} = A.joint{5}(inds(1):inds(2));
-
-figure
-plot(jointAnglesNoJump{5})
-
-% 6. GL94_02
-[p, inds] = findpeaks(A.joint{6}, 'MinPeakHeight', 150);
-
-figure
-plot(A.joint{6})
-hold on
-plot(inds, p, '*');
-hold off
-
-jointAnglesNoJump{6} = A.joint{6}(inds(1):end);
-
-figure
-plot(jointAnglesNoJump{6})
+for i = 1:numel(jointAnglesNoJump)
+    jointAnglesNoJump{i} = cleanAngleFromJump(A.joint{i}, 0);
+end
 
 %% FILTER ANGLES
 
