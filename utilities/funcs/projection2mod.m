@@ -41,8 +41,8 @@ if strcmp(obj.Segment,'Homer')
     if obj.UserData.isHomerRight == true
 %     ind_SagittalRotation = (abs(A(:,1))) > abs(A(:,3)); % AccX > AccZ
 %     ind_FrontalRotation = not(ind_SagittalRotation); % AccX < AccZ
-        ind_dietro_vert = A(:,1)<0 & A(:,3)>0; %Braccio indietro rispetto alla verticale
-        ind_sx_vert = A(:,1)<0 & A(:,3)<0; %Braccio a sx della verticale;
+        ind_dietro_vert = A(:,1)<0; %& A(:,3)>0; %Braccio indietro rispetto alla verticale
+        ind_sx_vert = A(:,1)<0; %& A(:,3)<0; %Braccio a sx della verticale;
     
 %     ind_SagittalToChange = ind_SagittalRotation & ind_AccXSmallerThan0;
         angle(ind_dietro_vert,1) = -angle(ind_dietro_vert,1);
