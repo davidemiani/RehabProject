@@ -26,14 +26,20 @@ LOA_inf = Mdiff - 1.96*SDdiff;
 LOA_sup = Mdiff + 1.96*SDdiff;
 
 %plot bland altman
-h = figure;
+h = figure('Position',get(0,'ScreenSize'));
 hold on
-plot([min(M) max(M)],[LOA_inf LOA_inf], 'b');
-plot([min(M) max(M)],[Mdiff Mdiff], '--r'); 
-plot([min(M) max(M)],[LOA_sup LOA_sup], 'b'); 
+plot([min(M) max(M)],[LOA_inf LOA_inf], 'b',...
+    'LineWidth',1.2);
+plot([min(M) max(M)],[Mdiff Mdiff], '--r',...
+'LineWidth',1.2); 
+plot([min(M) max(M)],[LOA_sup LOA_sup], 'b',...
+    'LineWidth',1.2); 
 plot(M,D,'ok');
 plot([min(M) max(M)],[0 0], 'k');
+xlabel('A+B/2');
+ylabel('A-B');
 legend('LOA','Mdiff');
+set(gca,'FontSize',25);
 title([t 'LOA = ' num2str(Mdiff,2) '\pm' num2str(1.96*SDdiff,2)]);
 
 % outputting
