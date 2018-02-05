@@ -6,6 +6,8 @@ clc
 %% INIT
 cartelleAcquisizioni = {'2018-01-31', '2018-02-01'};
 funzioneEval = @projection;
+% CM94_01 CM94_02 FP94_03 FP94_04 
+% FP94_01 FP94_02 GL94_01 GL94_02
 
 % parameters
 sf = 50;
@@ -25,12 +27,13 @@ A.sdJoint = Afull.sdJoint([1,2 5:8]);
 
 
 %% CLEANING DATA FROM JUMP
-
+sbj = {'CM94_01','CM94_02','FP94_01','FP94_02','GL94_01','GL94_02'};
 % show angles
 figure
 for i = 1:numel(A.joint)
     subplot(2,4,i)
     plot(A.joint{i})
+    title(sbj(i))
 end
 
 % initializig cell array with clean data
@@ -89,7 +92,7 @@ hold on
 plot(inds, p, '*');
 hold off
 
-jointAnglesNoJump{4} = A.joint{4}(inds(2):inds(end-1));
+jointAnglesNoJump{4} = A.joint{4}(inds(2):inds(3));
 
 figure
 plot(jointAnglesNoJump{4})
@@ -103,7 +106,7 @@ hold on
 plot(inds, p, '*');
 hold off
 
-jointAnglesNoJump{5} = A.joint{5}(inds(1):inds(end));
+jointAnglesNoJump{5} = A.joint{5}(inds(1):inds(2));
 
 figure
 plot(jointAnglesNoJump{5})
@@ -203,7 +206,7 @@ end
 AnglesGS.(acquisitions{1}) = [114; 99; 40; 114; 40; 99; 40; 114; 40; 99; 40; 114; 40; 114; 40; 40; 114; 40; 40; 114];
 AnglesGS.(acquisitions{2}) = [32; 103; 130; 103; 32; 103; 130; 103; 32; 103; 130; 103; 32; 103; 130; 103; 32; 103; 130; 103; 32; 103; 130; 103; 32];
 AnglesGS.(acquisitions{3}) = [41; 79; 41; 85; 41; 79; 41; 85; 41; 79; 41; 85; 41; 41; 85; 41; 79; 41; 85; 41];
-AnglesGS.(acquisitions{4}) = [37; 72; 109; 72; 37; 72; 109; 72; 37; 72; 109; 37; 109; 72; 109; 72; 37; 72; 109; 72; 37];
+AnglesGS.(acquisitions{4}) = [37; 72; 109; 72; 37; 72; 109; 72; 37; 72; 109; 109; 72; 109; 72; 37; 72; 109; 72; 37];
 AnglesGS.(acquisitions{5}) = [46; 75; 46; 87; 46; 75; 46; 87; 46; 75; 46; 87; 46; 75; 46; 87; 46; 75; 46; 87; 46; 75];
 AnglesGS.(acquisitions{6}) = [25; 72; 105; 72; 25; 72; 105; 72; 25; 72; 105; 72; 25; 72; 105; 72; 25; 72; 105; 72; 25; 72; 105];
 
