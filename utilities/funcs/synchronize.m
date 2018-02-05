@@ -4,9 +4,13 @@ function  [obj,MissingPacketsReport] = synchronize(obj,MaxforInterp,plotAcc)
 Nobjs = numel(obj);
 Ts = 1/obj(1,1).SamplingFrequency;
 
-if isempty(MaxforInterp) || Nobjs == 1
+if nargin<3
+    plotAcc = false;
+end
+if nargin<2 || Nobjs == 1
     MaxforInterp = 0;
 end
+
 
 %% ProgrNum sorting and Missing Packets Checking 
 %as ProgrNum ranges from 0 to 9999, than the counter restarts
@@ -15,7 +19,7 @@ for j = 1:Nobjs
     if height(obj(j,1).ExelData)>10000
         obj(j,1).ExelData.ProgrNum = ProgrNumSorting(obj(j,1).ExelData.ProgrNum);
     end
-    MissingPacketsReport(j,1) = CheckMissPack(obj(j,1));
+    MissingPacketsReport(j,1) = CheckMissPack(obj(j,1),plotAcc); %#okAGROW
 end
 
 %% adding rows
@@ -124,7 +128,7 @@ if ~isempty(dneg)
             
         end
         
-        vProgr = [vProgr vProgr(end) + Miss + 1 : vProgr(end) + Ncell + Miss];
+        vProgr = [vProgr vProgr(end) + Miss + 1 : vProgr(end) + Ncell + Miss]; %#okAGROW
     end
     vProgr = vProgr';
 else  %initial ProgrNum has only progressive number
@@ -199,7 +203,7 @@ for column = 3:lastcol
         ynew;
 end
 end
-function MissingPackets = CheckMissPack(obj)
+function MissingPackets = CheckMissPack(obj,plotAcc)
 % For each obj, the MissingPackets struct gives:
 % Name
 % Segment
@@ -215,7 +219,7 @@ function MissingPackets = CheckMissPack(obj)
 %                   number of missing samples
 
 %%
-fprintf(obj.Segment,' \n\n');
+fprintf([obj.Segment,' \n\n']);
 
 MissingPackets = struct(...
         'ExelName',obj.ExelName,'Segment',obj.Segment,...
@@ -249,9 +253,11 @@ if missint>0
     MissingPackets.PercSamples    = MissingPackets.MissSamplesTot/(obj.ExelData{end,1}+1)*100;
     MissingPackets.MissTime       = MissingPackets.MissSamplesTot/obj.SamplingFrequency;
     
+    if plotAcc
     figure,stem([obj.ExelData.ProgrNum(1); DeltaSamples-1]),
     title([obj.Segment, ' Missing Samples'])
     xlabel('Sample Index'),ylabel('Missing Samples');
+    end
 
 else
     fprintf('\nNo miss packets! :)\n\n')
