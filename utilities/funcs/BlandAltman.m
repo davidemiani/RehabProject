@@ -1,4 +1,15 @@
-function varargout = BlandAltman(A,B,title)
+function varargout = BlandAltman(A,B,t)
+%BLANDALTMAN Create BlandAltman plot.
+%    BLANDALTMAN(A,B) where A and B are two N-length double array;
+%    BLANDALTMAN(A,B,T) where T is the figure title;
+%    H = BLANDALTMAN(A,B,T) where H is figure handle.
+
+% checking title input
+if nargin < 3
+    t = '';
+else
+    t = [t,' '];
+end
 
 %compute mean of vectors
 M = (A + B)/2;
@@ -23,7 +34,7 @@ plot([min(M) max(M)],[LOA_sup LOA_sup], 'b');
 plot(M,D,'ok');
 plot([min(M) max(M)],[0 0], 'k');
 legend('LOA','Mdiff');
-title([title ' LOA = ' num2str(Mdiff,2) '\pm' num2str(1.96*SDdiff,2)]);
+title([t 'LOA = ' num2str(Mdiff,2) '\pm' num2str(1.96*SDdiff,2)]);
 
 % outputting
 if nargout > 0
