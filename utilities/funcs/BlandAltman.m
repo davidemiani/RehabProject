@@ -47,4 +47,5 @@ if nargout > 0
     varargout{1,1} = h;
 end
 
+RMSD = sqrt(sum(D.^2)/numel(D))
 end
