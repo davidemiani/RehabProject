@@ -8,7 +8,7 @@
 pulisci
 
 % loading a valid file from acquisition dir
-load(fullfile(pwd,'2018-02-01','FP94_02.mat'))
+load(fullfile(pwd,'2018-01-31','FP94_03.mat'))
 
 % getting sampling frequency and computing period
 sf = obj(1,1).SamplingFrequency;
@@ -126,7 +126,7 @@ for i = 1:1:numel(p)
 end
 
 % title
-time_tot = duration(0,0,(numel(theta)-1)*t0);
+time_tot = duration(0,0,numel(theta)*t0);
 tit = title({'PIE chart total';['(total time = ',char(time_tot),')']});
 tit.Position(1,2) = tit.Position(1,2) + 0.2;
 
@@ -152,6 +152,17 @@ PIEdata = [nnz(theta_ok < 20), ...
     nnz(theta_ok >= 90)] ./ numel(theta_ok);
 zero_elements = PIEdata == 0;
 
+% creating an empty pie if no static data
+if all(not(zero_elements))
+    PIEdata = [1,0,0,0];
+    zero_elements = PIEdata == 0;
+    c(1,:) = [0.5,0.5,0.5];
+    l{1,1} = 'No static data available';
+    noDataFlag = true;
+else
+    noDataFlag = false;
+end
+
 % plotting the pie chart
 warning('off','MATLAB:pie:NonPositiveData')
 p = pie(PIEdata);
@@ -164,13 +175,18 @@ for i = 1:1:numel(p)
         p(1,i).FaceColor = c_ok(k,:);
         k = k + 1;
     else
-        p(1,i).FontSize = 25;
+        if noDataFlag
+            p(1,i).String = '';
+        else
+            p(1,i).FontSize = 25;
+        end
     end
 end
 
 % title
-time_tot_stat = duration(0,0,(numel(theta_ok)-1)*t0);
-tit = title({'PIE chart static angles';['(total time = ',char(time_tot_stat),')']});
+time_tot_stat = duration(0,0,numel(theta_ok)*t0);
+tit = title({'PIE chart static angles'; ...
+    ['(total time = ',char(time_tot_stat),')']});
 tit.Position(1,2) = tit.Position(1,2) + 0.2;
 
 % legend
