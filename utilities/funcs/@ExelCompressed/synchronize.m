@@ -219,7 +219,7 @@ function MissingPackets = CheckMissPack(obj,plotAcc)
 %                   number of missing samples
 
 %%
-fprintf([obj.Segment,' \n\n']);
+%fprintf([obj.Segment,' \n\n']);
 
 MissingPackets = struct(...
         'ExelName',obj.ExelName,'Segment',obj.Segment,...
@@ -236,7 +236,7 @@ missint = nnz(missvec);
 
 % filling in the struct if there are missing packets
 if missint>0 
-    fprintf('\nOps! Some packets miss!\n\n');
+    %fprintf('\nOps! Some packets miss!\n\n');
     
     if missint == 1
         MissingPackets.WhereMiss = obj.ExelData.ProgrNum(DeltaSamples>1);
@@ -260,7 +260,7 @@ if missint>0
     end
 
 else
-    fprintf('\nNo miss packets! :)\n\n')
+    %fprintf('\nNo miss packets! :)\n\n')
 
 end
 end

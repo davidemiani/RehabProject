@@ -1,5 +1,5 @@
-% CLINICALREPORT
-% computes PIE and ISO chart.
+% CLINICALREPORTISO
+% computes ISO chart.
 
 
 %% INIT
@@ -22,22 +22,15 @@ time_th = 4; % s
 %% COMPUTING JOINT ANGLE
 %%
 % synchronizing objects 
-missingPacketsReport = synchronize(obj,100,0); 
+synchronize(obj,inf,false); 
 
 % computing angles with projection algorithm
 theta_hum = filterImuData(projection(obj(1,1)),sf);
 theta_thx = filterImuData(projection(obj(2,1)),sf);
 h = numel(theta_hum);
-% % getting smallest dimension and cutting angles
-%h = min(numel(theta_hum),numel(theta_thx));
-% theta_hum = theta_hum(1:h,1);
-% theta_thx = theta_thx(1:h,1);
 
 % computing joint angle as a sum of the two above
-theta = theta_hum + theta_thx;
-
-% getting time
-t = (0:t0:(numel(theta)-1)*t0)';
+theta = abs(theta_hum + theta_thx);
 
 
 %% ISO CHART
@@ -151,13 +144,16 @@ xticks(setdiff(xticks,[0,10,70,80]))
 xlabel('angle (deg)')
 ylabel( 'time (min)')
 title({'ISO chart'; ...
-    ['(total time = ',char(duration(0,0,t(end))), ...
+    ['(total time = ',char(duration(0,0,(numel(theta)-1)*t0)), ...
     ', static total time = ',char(duration(0,sum(ISOy),0)),')']})
 set(gca,'FontSize',25)
 
 
 %% PLOTS FOR CECI
 %%
+% getting time
+t = (0:t0:(numel(theta)-1)*t0)';
+
 % opening a new figure
 figure('Position',get(0,'ScreenSize'))
 

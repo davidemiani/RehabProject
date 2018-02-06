@@ -1,5 +1,5 @@
-% CLINICALREPORT
-% computes PIE and ISO chart.
+% CLINICALREPORTPIE
+% computes PIE chart.
 
 
 %% INIT
@@ -30,13 +30,10 @@ theta_thx = filterImuData(projection(obj(2,1)),sf);
 h = numel(theta_hum);
 
 % computing joint angle as a sum of the two above
-theta = theta_hum + theta_thx;
-
-% getting time
-t = (0:t0:(numel(theta)-1)*t0)';
+theta = abs(theta_hum + theta_thx);
 
 
-%% ISO CHART
+%% STATIC ANALYSIS
 %%
 % computing angular velocity
 omega = discDerivative(theta,t0);
@@ -129,7 +126,7 @@ for i = 1:1:numel(p)
 end
 
 % title
-time_tot = duration(0,0,t(end));
+time_tot = duration(0,0,(numel(theta)-1)*t0);
 tit = title({'PIE chart total';['(total time = ',char(time_tot),')']});
 tit.Position(1,2) = tit.Position(1,2) + 0.2;
 
@@ -172,7 +169,7 @@ for i = 1:1:numel(p)
 end
 
 % title
-time_tot_stat = duration(0,0,numel(theta_ok)*t0);
+time_tot_stat = duration(0,0,(numel(theta_ok)-1)*t0);
 tit = title({'PIE chart static angles';['(total time = ',char(time_tot_stat),')']});
 tit.Position(1,2) = tit.Position(1,2) + 0.2;
 
@@ -184,20 +181,4 @@ warning('on','MATLAB:legend:IgnoringExtraEntries')
 
 % setting all stuff a bit bigger thanks
 set(gca,'FontSize',25)
-
-
-%% PIE CHART ONLY ISO
-%%
-
-
-
-
-
-
-% text(-0.9,-1.25, ...
-%     'Percentage of time spent in different angle ranges','FontSize',25)
-% text(1.5,1.25, ...
-%     ['Total time = ',string(time_tot)],'FontSize',25)
-% text(1.5,1.25, ...
-%     ['Static time = ',string(time_tot_stat)],'FontSize',25)
 
