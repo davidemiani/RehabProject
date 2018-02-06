@@ -19,7 +19,6 @@ omega_th = 10; % deg/s
 time_th = 4; % s
 
 
-
 %% COMPUTING JOINT ANGLE
 %%
 % synchronizing objects 
@@ -39,6 +38,7 @@ theta = theta_hum + theta_thx;
 
 % getting time
 t = (0:t0:(numel(theta)-1)*t0)';
+
 
 %% ISO CHART
 %%
@@ -139,10 +139,10 @@ for i = 1:numel(ISOx)
     cISOy = ISOy(i,1);
     cDISx = DISx(i,1);
     cSTRG = {['n = ',num2str(ISO{i,'Occurrences'},2)]; ...
-        ['\mu = ',num2str(ISO{i,'Mean'},2)]; ...
-        ['\sigma = ',num2str(ISO{i,'DevStd'},2)]};
+        ['\mu = ',char(duration(0,ISO{i,'Mean'},0))]; ...
+        ['\sigma = ',char(duration(0,ISO{i,'DevStd'},0))]};
     plot(repmat(cISOx,1,2),[0,cISOy],'k','LineWidth',2)
-    text(cISOx+cDISx,cISOy+0.065*h,cSTRG,'FontSize',25)
+    text(cISOx+cDISx,cISOy+0.075*h,cSTRG,'FontSize',20)
 end
 clear cISOx cISOy cDISx
 
@@ -150,84 +150,14 @@ clear cISOx cISOy cDISx
 xticks(setdiff(xticks,[0,10,70,80]))
 xlabel('angle (deg)')
 ylabel( 'time (min)')
-title('ISO chart')
-set(gca,'FontSize',25)
-
-
-%% PIE CHART TOTAL
-%%
-% creating a new figure
-figure('Position',get(0,'ScreenSize'))
-
-subplot(1,2,1)
-
-% computing pie data
-PIEdata = [nnz(theta < 20), ...
-    nnz(theta >= 20 & theta < 60), ...
-    nnz(theta >= 60 & theta < 90), ...
-    nnz(theta >= 90)] ./ numel(theta);
-%PIEdata(PIEdata==0) = 0.009999;
-
-% plotting the pie chart
-warning('off','MATLAB:pie:NonPositiveData')
-p = pie(PIEdata);
-warning('on','MATLAB:pie:NonPositiveData')
-
-% some other plot stuff
-for i = 2:2:numel(p)
-    p(1,i).FontSize = 25;
-    %p(1,i).Position = p(1,i).Position - p(1,i).Position*0.075;
-end
-time_tot = duration(0,0,t(end));
-tit = title('PIE chart total');
-tit.Position(1,2) = tit.Position(1,2) + 0.2;
-warning('off','MATLAB:legend:IgnoringExtraEntries')
-legend('\theta<20','20\leq\theta<60', ...
-    '60\leq\theta<90','\geq90','Location','Best')
-warning('on','MATLAB:legend:IgnoringExtraEntries')
-text(-0.9,-1.25, ...
-    'Percentage of time spent in different angle ranges','FontSize',25)
-text(1.5,1.25, ...
-    ['Total time = ',string(time_tot)],'FontSize',25)
-set(gca,'FontSize',25)
-
-
-%% PIE CHART ONLY ISO
-%%
-subplot(1,2,2)
-
-theta_pie_statics = theta(times_ok_ind);
-% computing pie data
-PIEdata = [nnz(theta_pie_statics < 20), ...
-    nnz(theta_pie_statics >= 20 & theta_pie_statics < 60), ...
-    nnz(theta_pie_statics >= 60 & theta_pie_statics < 90), ...
-    nnz(theta_pie_statics >= 90)] ./ numel(theta_pie_statics);
-%PIEdata(PIEdata==0) = 0.009999;
-
-% plotting the pie chart
-warning('off','MATLAB:pie:NonPositiveData')
-p = pie(PIEdata);
-warning('on','MATLAB:pie:NonPositiveData')
-
-% some other plot stuff
-for i = 2:2:numel(p)
-    p(1,i).FontSize = 25;
-    %p(1,i).Position = p(1,i).Position - p(1,i).Position*0.075;
-end
-time_tot_stat = duration(0,0,sum(times));
-title('PIE chart static angles')
-warning('off','MATLAB:legend:IgnoringExtraEntries')
-legend('\theta<20','20\leq\theta<60', ...
-    '60\leq\theta<90','\geq90','Location','Best')
-warning('on','MATLAB:legend:IgnoringExtraEntries')
-text(1.5,1.25, ...
-    ['Static time = ',string(time_tot_stat)],'FontSize',25)
+title({'ISO chart'; ...
+    ['(total time = ',char(duration(0,0,t(end))), ...
+    ', static total time = ',char(duration(0,sum(ISOy),0)),')']})
 set(gca,'FontSize',25)
 
 
 %% PLOTS FOR CECI
 %%
-
 % opening a new figure
 figure('Position',get(0,'ScreenSize'))
 
