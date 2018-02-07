@@ -36,8 +36,8 @@ plot([min(M) max(M)],[LOA_sup LOA_sup], 'b',...
     'LineWidth',1.2); 
 plot(M,D,'ok');
 plot([min(M) max(M)],[0 0], 'k');
-xlabel('A+B/2');
-ylabel('A-B');
+xlabel('A+B/2 (deg)');
+ylabel('A-B (deg)');
 legend('LOA','Mdiff');
 set(gca,'FontSize',25);
 title([t 'LOA = ' num2str(Mdiff,2) '\pm' num2str(1.96*SDdiff,2)]);
