@@ -29,14 +29,14 @@ LOA_sup = Mdiff + 1.96*SDdiff;
 h = figure('Position',get(0,'ScreenSize'));
 hold on
 plot([min(M) max(M)],[LOA_inf LOA_inf], 'b',...
-    'LineWidth',1.2);
+    'LineWidth',1.5);
 plot([min(M) max(M)],[Mdiff Mdiff], '--r',...
-'LineWidth',1.2); 
+'LineWidth',1.5); 
 plot([min(M) max(M)],[LOA_sup LOA_sup], 'b',...
-    'LineWidth',1.2); 
-plot(M,D,'ok');
-plot([min(M) max(M)],[0 0], 'k');
-xlabel('A+B/2 (deg)');
+    'LineWidth',1.5); 
+plot(M,D,'ok','MarkerSize',7);
+plot([min(M) max(M)],[0 0], 'k', 'LineWidth',1.2);
+xlabel('(A+B)/2 (deg)');
 ylabel('A-B (deg)');
 legend('LOA','Mdiff');
 set(gca,'FontSize',25);
