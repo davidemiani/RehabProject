@@ -80,7 +80,7 @@ t0 = 1/sf;
 for i = 1:3
     % plotting
     ax(i,1) = subplot(3,1,i);
-    plot(times{i,1},theta{i,1},'Color',Color(i,:),'LineWidth',1.2)
+    plot(times{i,1},theta{i,1},'Color',Color(i,:),'LineWidth',1.5)
 
     % setting some other properties
     xlabel('time')
