@@ -8,7 +8,7 @@
 pulisci
 
 % loading a valid file from acquisition dir
-load(fullfile(pwd,'2018-01-31','FP94_03.mat'))
+load(fullfile(pwd,'2018-03-30','NS00_02.mat'))
 
 % getting sampling frequency and computing period
 sf = obj(1,1).SamplingFrequency;
@@ -153,7 +153,7 @@ PIEdata = [nnz(theta_ok < 20), ...
 zero_elements = PIEdata == 0;
 
 % creating an empty pie if no static data
-if all(not(zero_elements))
+if all(zero_elements==1)
     PIEdata = [1,0,0,0];
     zero_elements = PIEdata == 0;
     c(1,:) = [0.5,0.5,0.5];
